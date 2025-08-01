@@ -1,0 +1,14 @@
+import 'package:inventory_management/api/api_client.dart';
+import 'package:inventory_management/api/location_api.dart';
+import 'package:inventory_management/models/location.dart';
+
+class LocationRepository {
+  final _api = LocationApi();
+
+  Future<List<Location>> getAllLocations() => _api.fetchLocations();
+  Future<List<Location>> getLocationsBySection(int sectionId) => _api.fetchLocationsBySection(sectionId);
+  Future<Location> addLocation(Location location) => _api.createLocation(location);
+  Future<List<Location>> addLocations(List<Location> locations) => _api.createLocations(locations);
+  Future<void> removeLocation(int locationId) => _api.deleteLocation(locationId);
+  Future<DeleteResult> removeLocations(List<int> locationIds) => _api.deleteLocations(locationIds);
+}
