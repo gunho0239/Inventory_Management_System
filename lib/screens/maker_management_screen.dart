@@ -1,54 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/api/api_client.dart';
 import 'package:inventory_management/constants/default_dropdownmenuitem.dart';
-import 'package:inventory_management/datatable_source/part_type_data.dart';
+import 'package:inventory_management/datatable_source/part_maker_data.dart';
 import 'package:inventory_management/main.dart';
-import 'package:inventory_management/models/part_type.dart';
-import 'package:inventory_management/providers/type_provider.dart';
-import 'package:inventory_management/repository/part_type_repository.dart';
-import 'package:inventory_management/screens/type_register_screen.dart';
-import 'package:inventory_management/style/style.dart';
+import 'package:inventory_management/models/part_maker.dart';
+import 'package:inventory_management/providers/maker_provider.dart';
+import 'package:inventory_management/repository/part_maker_repository.dart';
 import 'package:inventory_management/widgets/buttons.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/title.dart';
 import 'package:provider/provider.dart';
 
-class TypeManagementScreen extends StatefulWidget {
-  const TypeManagementScreen({super.key});
+class MakerManagementScreen extends StatefulWidget {
+  const MakerManagementScreen({super.key});
 
   @override
-  State<TypeManagementScreen> createState() => _TypeManagementScreenState();
+  State<MakerManagementScreen> createState() => _MakerManagementScreenState();
 }
 
-class _TypeManagementScreenState extends State<TypeManagementScreen> {
-  PartType allType = PartType(id: defaultId, type: defaultLabel);
-  late PartType selectedType;
+class _MakerManagementScreenState extends State<MakerManagementScreen> {
+  PartMaker allMaker = PartMaker(id: defaultId, maker: defaultLabel);
+  late PartMaker selectedMaker;
 
-  final List<DataColumn> columns = [DataColumn(label: Text('품명'))];
+  final List<DataColumn> columns = [DataColumn(label: Text('제조사'))];
 
-  Set<PartType> selectedTypes = {};
-  late PartTypeDataSource _dataSource;
+  Set<PartMaker> selectedMakers = {};
+  late PartMakerDataSource _dataSource;
 
   @override
   void initState() {
     super.initState();
-    selectedType = allType;
-    Provider.of<TypeProvider>(context, listen: false).reloadTypes();
+    selectedMaker = allMaker;
+    Provider.of<MakerProvider>(context, listen: false).reloadMakers();
   }
 
   @override
   Widget build(BuildContext context) {
-    final typeProvider = Provider.of<TypeProvider>(context);
+    final makerProvider = Provider.of<MakerProvider>(context);
 
-    _dataSource = PartTypeDataSource(
-      types: (selectedType == allType) ? typeProvider.types : [selectedType],
-      selectedTypes: selectedTypes,
-      onSelectChanged: (type, selected) {
+    _dataSource = PartMakerDataSource(
+      makers: (selectedMaker == allMaker) ? makerProvider.makers : [selectedMaker],
+      selectedMakers: selectedMakers,
+      onSelectChanged: (maker, selected) {
         setState(() {
           if (selected) {
-            selectedTypes.add(type);
+            selectedMakers.add(maker);
           } else {
-            selectedTypes.remove(type);
+            selectedMakers.remove(maker);
           }
         });
       },
@@ -58,7 +56,7 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ScreenTitle(menu: InventoryMenu.typeManagement),
+          ScreenTitle(menu: InventoryMenu.makerManagement),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,29 +70,11 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                     spacing: 20,
                     children: [
                       GoBackButton(),
-                      ElevatedButton(
-                        style: AppButtonStyle.newPage,
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const TypeRegisterScreen(),
-                            ),
-                          );
-                        },
-                        child: Row(
-                          spacing: 10,
-                          children: [
-                            Icon(Icons.add, size: 20),
-                            Text('새로운 품명', style: TextStyle(fontSize: 18)),
-                          ],
-                        ),
-                      ),
-                      ElevatedButton(
-                        child: Icon(Icons.refresh, size: 30),
+                      RegisterPageButton(InventoryMenu.makerRegister,),
+                      RefreshButton(
                         onPressed: () {
                           setState(() {
-                            typeProvider.reloadTypes();
+                            makerProvider.reloadMakers();
                           });
                         },
                       ),
@@ -112,28 +92,28 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                       children: [
                         Row(
                           children: [
-                            Text("품명 :"),
+                            Text("제조사 :"),
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                 vertical: 5.0,
                                 horizontal: 10.0,
                               ),
-                              child: DropdownMenu<PartType>(
+                              child: DropdownMenu<PartMaker>(
                                 menuHeight: 400,
-                                initialSelection: selectedType,
-                                onSelected: (type) {
-                                  selectedType = type!;
+                                initialSelection: selectedMaker,
+                                onSelected: (maker) {
+                                  selectedMaker = maker!;
                                   setState(() {});
                                 },
                                 dropdownMenuEntries: [
-                                  DropdownMenuEntry<PartType>(
-                                    value: allType,
-                                    label: allType.type!,
+                                  DropdownMenuEntry<PartMaker>(
+                                    value: allMaker,
+                                    label: allMaker.maker!,
                                   ),
-                                  ...typeProvider.types.map(
-                                    (type) => DropdownMenuEntry<PartType>(
-                                      value: type,
-                                      label: type.type!,
+                                  ...makerProvider.makers.map(
+                                    (maker) => DropdownMenuEntry<PartMaker>(
+                                      value: maker,
+                                      label: maker.maker!,
                                     ),
                                   ),
                                 ],
@@ -161,34 +141,34 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: DeleteButton(
                             onPressed: () async {
-                              if (selectedTypes.isEmpty) {
+                              if (selectedMakers.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('삭제할 품명을 선택해주세요.')),
+                                  SnackBar(content: Text('삭제할 제조사를 선택해주세요.')),
                                 );
                                 return;
                               }
                               final confirmed = await showDialog(
                                 context: context,
                                 builder: (context) =>
-                                    ConfirmDialog(message: "선택한 품명을 삭제하시겠습니까?"),
+                                    ConfirmDialog(message: "선택한 제조사를 삭제하시겠습니까?"),
                               );
 
                               if (!confirmed) return;
 
-                              List<int> typeIds = selectedTypes
-                                  .map((type) => type.id!)
+                              List<int> makerIds = selectedMakers
+                                  .map((maker) => maker.id!)
                                   .toList();
-                              DeleteResult result = await PartTypeRepository()
-                                  .removePartTypes(typeIds);
+                              DeleteResult result = await PartMakerRepository()
+                                  .removePartMakers(makerIds);
 
                               String message = "";
                               if (result.successCount > 0) {
                                 message =
-                                    "${result.successCount}개의 품명을 삭제하였습니다.\n";
+                                    "${result.successCount}개의 제조사를 삭제하였습니다.\n";
                               }
                               if (result.failedCount > 0) {
                                 message =
-                                    "${result.successCount}개 삭제 완료\n${result.failedCount}개 삭제 실패!\n해당 품명의 부품을 먼저 삭제해주세요.";
+                                    "${result.successCount}개 삭제 완료\n${result.failedCount}개 삭제 실패!\n해당 제조사의 부품을 먼저 삭제해주세요.";
                               }
 
                               if (!mounted) return;
@@ -198,11 +178,11 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                                     ResultDialog(message: message),
                               );
 
-                              selectedTypes.clear();
-                              Provider.of<TypeProvider>(
+                              selectedMakers.clear();
+                              Provider.of<MakerProvider>(
                                 context,
                                 listen: false,
-                              ).reloadTypes();
+                              ).reloadMakers();
                               setState(() {});
                             },
                           ),

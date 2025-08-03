@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventory_management/constants/default_dropdownmenuitem.dart';
 import 'package:inventory_management/models/location_section.dart';
 import 'package:inventory_management/repository/location_section_repository.dart';
 
@@ -14,8 +15,8 @@ class SectionProvider extends ChangeNotifier {
     
     _sectionsDropdown = [
       DropdownMenuItem<String>(
-        value: '-1',
-        child: Text('전체'),
+        value: defaultId.toString(),
+        child: Text(defaultLabel),
       ),
       ..._sections.map((section) => DropdownMenuItem<String>(
         value: section.id.toString(),

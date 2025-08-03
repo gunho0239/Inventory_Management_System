@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventory_management/constants/default_dropdownmenuitem.dart';
 import 'package:inventory_management/models/part_type.dart';
 import 'package:inventory_management/repository/part_type_repository.dart';
 
@@ -14,8 +15,8 @@ class TypeProvider extends ChangeNotifier {
     
     _typesDropdown = [
       DropdownMenuItem<String>(
-        value: '-1',
-        child: Text('전체'),
+        value: defaultId.toString(),
+        child: Text(defaultLabel),
       ),
       ..._types.map((type) => DropdownMenuItem<String>(
         value: type.id.toString(),

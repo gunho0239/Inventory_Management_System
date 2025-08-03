@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/providers/type_provider.dart';
+import 'package:inventory_management/providers/unit_provider.dart';
 import 'package:inventory_management/screens/part_management_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:inventory_management/providers/section_provider.dart';
@@ -15,6 +17,8 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => SectionProvider()),
         ChangeNotifierProvider(create: (_) => TypeProvider()),
+        ChangeNotifierProvider(create: (_) => MakerProvider()),
+        ChangeNotifierProvider(create: (_) => UnitProvider()),
       ],
       child: MaterialApp(home: const MainApp())
     ),
@@ -72,8 +76,8 @@ enum InventoryMenu {
     stockRegister,    // 재고 등록
     partManagement,   // 부품 관리
     partRegister,     // 부품 등록
-    typeManagement,   // 타입 관리
-    typeRegister,     // 타입 등록
+    typeManagement,   // 품명 관리
+    typeRegister,     // 품명명 등록
     makerManagement,  // 제조사 관리
     makerRegister,    // 제조사 등록
     unitManagement,   // 단위 관리

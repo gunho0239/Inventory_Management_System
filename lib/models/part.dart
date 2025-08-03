@@ -33,7 +33,11 @@ class Part {
       identical(this, other) ||
       other is Part &&
           runtimeType == other.runtimeType &&
-          id == other.id;
+          id == other.id &&
+          type == other.type &&
+          specification == other.specification &&
+          maker == other.maker &&
+          unit == other.unit;
 
   @override
   int get hashCode => id.hashCode;

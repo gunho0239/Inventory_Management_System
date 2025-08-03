@@ -1,54 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/api/api_client.dart';
 import 'package:inventory_management/constants/default_dropdownmenuitem.dart';
-import 'package:inventory_management/datatable_source/part_type_data.dart';
+import 'package:inventory_management/datatable_source/part_unit_data.dart';
 import 'package:inventory_management/main.dart';
-import 'package:inventory_management/models/part_type.dart';
-import 'package:inventory_management/providers/type_provider.dart';
-import 'package:inventory_management/repository/part_type_repository.dart';
-import 'package:inventory_management/screens/type_register_screen.dart';
-import 'package:inventory_management/style/style.dart';
+import 'package:inventory_management/models/part_unit.dart';
+import 'package:inventory_management/providers/unit_provider.dart';
+import 'package:inventory_management/repository/part_unit_repository.dart';
 import 'package:inventory_management/widgets/buttons.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/title.dart';
 import 'package:provider/provider.dart';
 
-class TypeManagementScreen extends StatefulWidget {
-  const TypeManagementScreen({super.key});
+class UnitManagementScreen extends StatefulWidget {
+  const UnitManagementScreen({super.key});
 
   @override
-  State<TypeManagementScreen> createState() => _TypeManagementScreenState();
+  State<UnitManagementScreen> createState() => _UnitManagementScreenState();
 }
 
-class _TypeManagementScreenState extends State<TypeManagementScreen> {
-  PartType allType = PartType(id: defaultId, type: defaultLabel);
-  late PartType selectedType;
+class _UnitManagementScreenState extends State<UnitManagementScreen> {
+  PartUnit allUnit = PartUnit(id: defaultId, unit: defaultLabel);
+  late PartUnit selectedUnit;
 
-  final List<DataColumn> columns = [DataColumn(label: Text('품명'))];
+  final List<DataColumn> columns = [DataColumn(label: Text('단위'))];
 
-  Set<PartType> selectedTypes = {};
-  late PartTypeDataSource _dataSource;
+  Set<PartUnit> selectedUnits = {};
+  late PartUnitDataSource _dataSource;
 
   @override
   void initState() {
     super.initState();
-    selectedType = allType;
-    Provider.of<TypeProvider>(context, listen: false).reloadTypes();
+    selectedUnit = allUnit;
+    Provider.of<UnitProvider>(context, listen: false).reloadUnits();
   }
 
   @override
   Widget build(BuildContext context) {
-    final typeProvider = Provider.of<TypeProvider>(context);
+    final unitProvider = Provider.of<UnitProvider>(context);
 
-    _dataSource = PartTypeDataSource(
-      types: (selectedType == allType) ? typeProvider.types : [selectedType],
-      selectedTypes: selectedTypes,
-      onSelectChanged: (type, selected) {
+    _dataSource = PartUnitDataSource(
+      units: (selectedUnit == allUnit) ? unitProvider.units : [selectedUnit],
+      selectedUnits: selectedUnits,
+      onSelectChanged: (unit, selected) {
         setState(() {
           if (selected) {
-            selectedTypes.add(type);
+            selectedUnits.add(unit);
           } else {
-            selectedTypes.remove(type);
+            selectedUnits.remove(unit);
           }
         });
       },
@@ -58,7 +56,7 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ScreenTitle(menu: InventoryMenu.typeManagement),
+          ScreenTitle(menu: InventoryMenu.unitManagement),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,29 +70,11 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                     spacing: 20,
                     children: [
                       GoBackButton(),
-                      ElevatedButton(
-                        style: AppButtonStyle.newPage,
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const TypeRegisterScreen(),
-                            ),
-                          );
-                        },
-                        child: Row(
-                          spacing: 10,
-                          children: [
-                            Icon(Icons.add, size: 20),
-                            Text('새로운 품명', style: TextStyle(fontSize: 18)),
-                          ],
-                        ),
-                      ),
-                      ElevatedButton(
-                        child: Icon(Icons.refresh, size: 30),
+                      RegisterPageButton(InventoryMenu.unitRegister,),
+                      RefreshButton(
                         onPressed: () {
                           setState(() {
-                            typeProvider.reloadTypes();
+                            unitProvider.reloadUnits();
                           });
                         },
                       ),
@@ -112,28 +92,28 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                       children: [
                         Row(
                           children: [
-                            Text("품명 :"),
+                            Text("단위 :"),
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                 vertical: 5.0,
                                 horizontal: 10.0,
                               ),
-                              child: DropdownMenu<PartType>(
+                              child: DropdownMenu<PartUnit>(
                                 menuHeight: 400,
-                                initialSelection: selectedType,
-                                onSelected: (type) {
-                                  selectedType = type!;
+                                initialSelection: selectedUnit,
+                                onSelected: (unit) {
+                                  selectedUnit = unit!;
                                   setState(() {});
                                 },
                                 dropdownMenuEntries: [
-                                  DropdownMenuEntry<PartType>(
-                                    value: allType,
-                                    label: allType.type!,
+                                  DropdownMenuEntry<PartUnit>(
+                                    value: allUnit,
+                                    label: allUnit.unit!,
                                   ),
-                                  ...typeProvider.types.map(
-                                    (type) => DropdownMenuEntry<PartType>(
-                                      value: type,
-                                      label: type.type!,
+                                  ...unitProvider.units.map(
+                                    (unit) => DropdownMenuEntry<PartUnit>(
+                                      value: unit,
+                                      label: unit.unit!,
                                     ),
                                   ),
                                 ],
@@ -161,34 +141,34 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: DeleteButton(
                             onPressed: () async {
-                              if (selectedTypes.isEmpty) {
+                              if (selectedUnits.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('삭제할 품명을 선택해주세요.')),
+                                  SnackBar(content: Text('삭제할 단위를 선택해주세요.')),
                                 );
                                 return;
                               }
                               final confirmed = await showDialog(
                                 context: context,
                                 builder: (context) =>
-                                    ConfirmDialog(message: "선택한 품명을 삭제하시겠습니까?"),
+                                    ConfirmDialog(message: "선택한 단위를 삭제하시겠습니까?"),
                               );
 
                               if (!confirmed) return;
 
-                              List<int> typeIds = selectedTypes
-                                  .map((type) => type.id!)
+                              List<int> unitIds = selectedUnits
+                                  .map((unit) => unit.id!)
                                   .toList();
-                              DeleteResult result = await PartTypeRepository()
-                                  .removePartTypes(typeIds);
+                              DeleteResult result = await PartUnitRepository()
+                                  .removePartUnits(unitIds);
 
                               String message = "";
                               if (result.successCount > 0) {
                                 message =
-                                    "${result.successCount}개의 품명을 삭제하였습니다.\n";
+                                    "${result.successCount}개의 단위를 삭제하였습니다.\n";
                               }
                               if (result.failedCount > 0) {
                                 message =
-                                    "${result.successCount}개 삭제 완료\n${result.failedCount}개 삭제 실패!\n해당 품명의 부품을 먼저 삭제해주세요.";
+                                    "${result.successCount}개 삭제 완료\n${result.failedCount}개 삭제 실패!\n해당 단위의 부품을 먼저 삭제해주세요.";
                               }
 
                               if (!mounted) return;
@@ -198,11 +178,11 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                                     ResultDialog(message: message),
                               );
 
-                              selectedTypes.clear();
-                              Provider.of<TypeProvider>(
+                              selectedUnits.clear();
+                              Provider.of<UnitProvider>(
                                 context,
                                 listen: false,
-                              ).reloadTypes();
+                              ).reloadUnits();
                               setState(() {});
                             },
                           ),

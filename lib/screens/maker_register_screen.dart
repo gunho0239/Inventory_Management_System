@@ -1,70 +1,70 @@
 import 'package:flutter/material.dart';
-import 'package:inventory_management/datatable_source/part_type_data.dart';
+import 'package:inventory_management/datatable_source/part_maker_data.dart';
 import 'package:inventory_management/main.dart';
-import 'package:inventory_management/models/part_type.dart';
-import 'package:inventory_management/providers/type_provider.dart';
-import 'package:inventory_management/repository/part_type_repository.dart';
+import 'package:inventory_management/models/part_maker.dart';
+import 'package:inventory_management/providers/maker_provider.dart';
+import 'package:inventory_management/repository/part_maker_repository.dart';
 import 'package:inventory_management/widgets/buttons.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/title.dart';
 import 'package:provider/provider.dart';
 
-class TypeRegisterScreen extends StatefulWidget {
-  const TypeRegisterScreen({super.key});
+class MakerRegisterScreen extends StatefulWidget {
+  const MakerRegisterScreen({super.key});
 
   @override
-  State<TypeRegisterScreen> createState() => _TypeRegisterScreenState();
+  State<MakerRegisterScreen> createState() => _MakerRegisterScreenState();
 }
 
-class _TypeRegisterScreenState extends State<TypeRegisterScreen> {
-  final TextEditingController typeFieldController = TextEditingController();
-  final FocusNode _typeFieldFocusNode = FocusNode();
+class _MakerRegisterScreenState extends State<MakerRegisterScreen> {
+  final TextEditingController makerFieldController = TextEditingController();
+  final FocusNode _makerFieldFocusNode = FocusNode();
 
-  final List<DataColumn> columns = [DataColumn(label: Text('품명'))];
-  late PartTypeDataSource _dataSource;
+  final List<DataColumn> columns = [DataColumn(label: Text('제조사'))];
+  late PartMakerDataSource _dataSource;
   Key dataTableKey = UniqueKey();
 
-  Set<PartType> types = {};
-  Set<PartType> selectedTypes = {};
+  Set<PartMaker> makers = {};
+  Set<PartMaker> selectedMakers = {};
 
-  void addType(BuildContext context, String typeName) {
-    if (typeName.isNotEmpty) {
-      PartType newType = PartType(type: typeName);
-      types.add(newType);
-      typeFieldController.clear();
+  void addMaker(BuildContext context, String makerName) {
+    if (makerName.isNotEmpty) {
+      PartMaker newMaker = PartMaker(maker: makerName);
+      makers.add(newMaker);
+      makerFieldController.clear();
       setState(() {});
-      FocusScope.of(context).requestFocus(_typeFieldFocusNode);
+      FocusScope.of(context).requestFocus(_makerFieldFocusNode);
     } 
     else {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('품명 이름을 입력해주세요.')));
+      ).showSnackBar(SnackBar(content: Text('제조사 이름을 입력해주세요.')));
     }
   }
 
-  Future<int> registerAllTypes() async {
-    if (types.isEmpty) return 0;
+  Future<int> registerAllMakers() async {
+    if (makers.isEmpty) return 0;
 
-    List<PartType> typeList = types.toList();
-    typeList.sort((a, b) => a.type!.compareTo(b.type!));
+    List<PartMaker> makerList = makers.toList();
+    makerList.sort((a, b) => a.maker!.compareTo(b.maker!));
 
-    List<PartType> registeredTypes = await PartTypeRepository()
-        .addPartTypes(typeList);
+    List<PartMaker> registeredMakers = await PartMakerRepository()
+        .addPartMakers(makerList);
 
-    return registeredTypes.length;
+    return registeredMakers.length;
   }
 
   @override
   Widget build(BuildContext context) {
-    _dataSource = PartTypeDataSource(
-      types: types.toList(),
-      selectedTypes: selectedTypes,
-      onSelectChanged: (type, selected) {
+    _dataSource = PartMakerDataSource(
+      makers: makers.toList(),
+      selectedMakers: selectedMakers,
+      onSelectChanged: (maker, selected) {
         setState(() {
           if (selected) {
-            selectedTypes.add(type);
+            selectedMakers.add(maker);
           } else {
-            selectedTypes.remove(type);
+            selectedMakers.remove(maker);
           }
         });
       },
@@ -74,7 +74,7 @@ class _TypeRegisterScreenState extends State<TypeRegisterScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ScreenTitle(menu: InventoryMenu.typeRegister),
+          ScreenTitle(menu: InventoryMenu.makerRegister),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,24 +98,24 @@ class _TypeRegisterScreenState extends State<TypeRegisterScreen> {
                         SizedBox(width: 10),
                         Row(
                           children: [
-                            Text("품명 :"),
+                            Text("제조사 :"),
                             SizedBox(
                               width: 180,
                               child: TextField(
-                                controller: typeFieldController,
-                                focusNode: _typeFieldFocusNode,
+                                controller: makerFieldController,
+                                focusNode: _makerFieldFocusNode,
                                 textAlign: TextAlign.center,
-                                onSubmitted: (typeName) {
-                                  addType(context, typeName.trim());
+                                onSubmitted: (makerName) {
+                                  addMaker(context, makerName.trim());
                                 },
                               ),
                             ),
                             ElevatedButton(
                               child: Icon(Icons.add, size: 30),
                               onPressed: () {
-                                String typeName = typeFieldController.text
+                                String makerName = makerFieldController.text
                                     .trim();
-                                addType(context, typeName);
+                                addMaker(context, makerName);
                               },
                             ),
                           ],
@@ -141,38 +141,38 @@ class _TypeRegisterScreenState extends State<TypeRegisterScreen> {
                           children: [
                             SaveAllButton(
                               onPressed: () async {
-                                if (types.isEmpty) {
+                                if (makers.isEmpty) {
                                   showDialog(
                                     context: context,
                                     builder: (context) =>
-                                        ErrorDialog(message: '등록할 품명이 없습니다.'),
+                                        ErrorDialog(message: '등록할 제조사가 없습니다.'),
                                   );
                                   return;
                                 }
 
-                                int count = await registerAllTypes();
+                                int count = await registerAllMakers();
 
                                 if (!mounted) return;
 
                                 if (count > 0) {
-                                  types.clear();
+                                  makers.clear();
                                   dataTableKey = UniqueKey();
-                                  Provider.of<TypeProvider>(
+                                  Provider.of<MakerProvider>(
                                     context,
                                     listen: false,
-                                  ).reloadTypes();
+                                  ).reloadMakers();
                                   setState(() {});
                                   showDialog(
                                     context: context,
                                     builder: (context) => ResultDialog(
-                                      message: '$count개의 품명이 등록되었습니다.',
+                                      message: '$count개의 제조사가 등록되었습니다.',
                                     ),
                                   );
                                 } else {
                                   showDialog(
                                     context: context,
                                     builder: (context) =>
-                                        ErrorDialog(message: '이미 등록된 품명입니다.'),
+                                        ErrorDialog(message: '이미 등록된 제조사입니다.'),
                                   );
                                   return;
                                 }
@@ -181,15 +181,15 @@ class _TypeRegisterScreenState extends State<TypeRegisterScreen> {
                             SizedBox(height: 20),
                             DeleteButton(
                               onPressed: () {
-                                if (selectedTypes.isEmpty) {
+                                if (selectedMakers.isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('삭제할 품명을 선택해주세요.')),
+                                    SnackBar(content: Text('삭제할 제조사를 선택해주세요.')),
                                   );
                                   return;
                                 }
                                 setState(() {
-                                  types.removeAll(selectedTypes);
-                                  selectedTypes.clear();
+                                  makers.removeAll(selectedMakers);
+                                  selectedMakers.clear();
                                 });
                               },
                             ),
