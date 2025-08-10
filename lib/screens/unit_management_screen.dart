@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/api/api_client.dart';
-import 'package:inventory_management/constants/default_dropdownmenuitem.dart';
 import 'package:inventory_management/datatable_source/part_unit_data.dart';
 import 'package:inventory_management/main.dart';
 import 'package:inventory_management/models/part_unit.dart';
@@ -19,19 +18,20 @@ class UnitManagementScreen extends StatefulWidget {
 }
 
 class _UnitManagementScreenState extends State<UnitManagementScreen> {
-  PartUnit allUnit = PartUnit(id: defaultId, unit: defaultLabel);
   late PartUnit selectedUnit;
 
   final List<DataColumn> columns = [DataColumn(label: Text('단위'))];
 
   Set<PartUnit> selectedUnits = {};
   late PartUnitDataSource _dataSource;
+  Key dataTableKey = UniqueKey();
 
   @override
   void initState() {
     super.initState();
-    selectedUnit = allUnit;
-    Provider.of<UnitProvider>(context, listen: false).reloadUnits();
+    final unitProvider = Provider.of<UnitProvider>(context, listen: false);
+    selectedUnit = unitProvider.allUnit;
+    unitProvider.reloadUnits();
   }
 
   @override
@@ -39,7 +39,7 @@ class _UnitManagementScreenState extends State<UnitManagementScreen> {
     final unitProvider = Provider.of<UnitProvider>(context);
 
     _dataSource = PartUnitDataSource(
-      units: (selectedUnit == allUnit) ? unitProvider.units : [selectedUnit],
+      units: (selectedUnit == unitProvider.allUnit) ? unitProvider.units : [selectedUnit],
       selectedUnits: selectedUnits,
       onSelectChanged: (unit, selected) {
         setState(() {
@@ -105,18 +105,7 @@ class _UnitManagementScreenState extends State<UnitManagementScreen> {
                                   selectedUnit = unit!;
                                   setState(() {});
                                 },
-                                dropdownMenuEntries: [
-                                  DropdownMenuEntry<PartUnit>(
-                                    value: allUnit,
-                                    label: allUnit.unit!,
-                                  ),
-                                  ...unitProvider.units.map(
-                                    (unit) => DropdownMenuEntry<PartUnit>(
-                                      value: unit,
-                                      label: unit.unit!,
-                                    ),
-                                  ),
-                                ],
+                                dropdownMenuEntries: unitProvider.unitsDropdownWithAll,
                               ),
                             ),
                           ],
@@ -129,6 +118,7 @@ class _UnitManagementScreenState extends State<UnitManagementScreen> {
                             ),
                             child: SingleChildScrollView(
                               child: PaginatedDataTable(
+                                key: dataTableKey,
                                 columns: columns,
                                 source: _dataSource,
                                 rowsPerPage: 10,
@@ -163,6 +153,8 @@ class _UnitManagementScreenState extends State<UnitManagementScreen> {
 
                               String message = "";
                               if (result.successCount > 0) {
+                                dataTableKey = UniqueKey();
+                                selectedUnit = unitProvider.allUnit;
                                 message =
                                     "${result.successCount}개의 단위를 삭제하였습니다.\n";
                               }

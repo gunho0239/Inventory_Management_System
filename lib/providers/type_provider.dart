@@ -4,25 +4,28 @@ import 'package:inventory_management/models/part_type.dart';
 import 'package:inventory_management/repository/part_type_repository.dart';
 
 class TypeProvider extends ChangeNotifier {
+  PartType allType = PartType(id: defaultId, type: defaultLabel);
   List<PartType> _types = [];
-  List<DropdownMenuItem<String>> _typesDropdown = [];
+  List<DropdownMenuEntry<PartType>> _typesDropdown = [];
 
   List<PartType> get types => _types;
-  List<DropdownMenuItem<String>> get typesDropdown => _typesDropdown;
+  List<DropdownMenuEntry<PartType>> get typesDropdown => _typesDropdown;
+  List<DropdownMenuEntry<PartType>> get typesDropdownWithAll => [
+    DropdownMenuEntry<PartType>(
+      value: allType,
+      label: allType.type!,
+    ),
+    ..._typesDropdown,
+  ];
 
   Future<void> reloadTypes() async {
     _types = await PartTypeRepository().getAllPartTypes();
     
-    _typesDropdown = [
-      DropdownMenuItem<String>(
-        value: defaultId.toString(),
-        child: Text(defaultLabel),
-      ),
-      ..._types.map((type) => DropdownMenuItem<String>(
-        value: type.id.toString(),
-        child: Text(type.type!),
-      ))
-    ];
+    _typesDropdown = _types.map((type) => DropdownMenuEntry<PartType>(
+        value: type,
+        label: type.type!,
+      )).toList();
+
     notifyListeners();
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/providers/maker_provider.dart';
+import 'package:inventory_management/providers/part_provider.dart';
 import 'package:inventory_management/providers/type_provider.dart';
 import 'package:inventory_management/providers/unit_provider.dart';
 import 'package:inventory_management/screens/part_management_screen.dart';
@@ -16,6 +17,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => SectionProvider()),
+        ChangeNotifierProvider(create: (_) => PartProvider()),
         ChangeNotifierProvider(create: (_) => TypeProvider()),
         ChangeNotifierProvider(create: (_) => MakerProvider()),
         ChangeNotifierProvider(create: (_) => UnitProvider()),

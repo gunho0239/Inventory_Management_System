@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/api/api_client.dart';
-import 'package:inventory_management/constants/default_dropdownmenuitem.dart';
 import 'package:inventory_management/datatable_source/part_type_data.dart';
 import 'package:inventory_management/main.dart';
 import 'package:inventory_management/models/part_type.dart';
@@ -21,19 +20,21 @@ class TypeManagementScreen extends StatefulWidget {
 }
 
 class _TypeManagementScreenState extends State<TypeManagementScreen> {
-  PartType allType = PartType(id: defaultId, type: defaultLabel);
+  
   late PartType selectedType;
 
   final List<DataColumn> columns = [DataColumn(label: Text('품명'))];
 
   Set<PartType> selectedTypes = {};
   late PartTypeDataSource _dataSource;
+  Key dataTableKey = UniqueKey();
 
   @override
   void initState() {
     super.initState();
-    selectedType = allType;
-    Provider.of<TypeProvider>(context, listen: false).reloadTypes();
+    final typeProvider = Provider.of<TypeProvider>(context, listen: false);
+    selectedType = typeProvider.allType;
+    typeProvider.reloadTypes();
   }
 
   @override
@@ -41,7 +42,7 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
     final typeProvider = Provider.of<TypeProvider>(context);
 
     _dataSource = PartTypeDataSource(
-      types: (selectedType == allType) ? typeProvider.types : [selectedType],
+      types: (selectedType == typeProvider.allType) ? typeProvider.types : [selectedType],
       selectedTypes: selectedTypes,
       onSelectChanged: (type, selected) {
         setState(() {
@@ -125,18 +126,7 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                                   selectedType = type!;
                                   setState(() {});
                                 },
-                                dropdownMenuEntries: [
-                                  DropdownMenuEntry<PartType>(
-                                    value: allType,
-                                    label: allType.type!,
-                                  ),
-                                  ...typeProvider.types.map(
-                                    (type) => DropdownMenuEntry<PartType>(
-                                      value: type,
-                                      label: type.type!,
-                                    ),
-                                  ),
-                                ],
+                                dropdownMenuEntries: typeProvider.typesDropdownWithAll,
                               ),
                             ),
                           ],
@@ -149,6 +139,7 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                             ),
                             child: SingleChildScrollView(
                               child: PaginatedDataTable(
+                                key: dataTableKey,
                                 columns: columns,
                                 source: _dataSource,
                                 rowsPerPage: 10,
@@ -183,6 +174,8 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
 
                               String message = "";
                               if (result.successCount > 0) {
+                                dataTableKey = UniqueKey();
+                                selectedType = typeProvider.allType;
                                 message =
                                     "${result.successCount}개의 품명을 삭제하였습니다.\n";
                               }

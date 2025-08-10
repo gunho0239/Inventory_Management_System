@@ -15,6 +15,12 @@ class ScreenTitle extends StatelessWidget {
       case InventoryMenu.typeManagement:
       case InventoryMenu.typeRegister:
         return Icon(MenuIcons.type, size: 30);
+      case InventoryMenu.makerManagement:
+      case InventoryMenu.makerRegister:
+        return Icon(MenuIcons.maker, size: 30);
+      case InventoryMenu.unitManagement:
+      case InventoryMenu.unitRegister:
+        return Icon(MenuIcons.unit, size: 30);
       case InventoryMenu.locationManagement:
       case InventoryMenu.locationRegister:
         return Icon(MenuIcons.location, size: 30);

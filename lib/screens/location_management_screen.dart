@@ -31,11 +31,10 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
     DataColumn(label: Text('구역')),
     DataColumn(label: Text('번호')),
   ];
-
-  List<Location> inquiredLocations = [];
-  Set<Location> selectedLocations = {};
   late LocationDataSource _dataSource;
   Key dataTableKey = UniqueKey();
+  List<Location> inquiredLocations = [];
+  Set<Location> selectedLocations = {};
 
   @override
   void initState() {

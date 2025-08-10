@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/api/api_client.dart';
-import 'package:inventory_management/constants/default_dropdownmenuitem.dart';
 import 'package:inventory_management/datatable_source/location_section_data.dart';
 import 'package:inventory_management/main.dart';
 import 'package:inventory_management/models/location_section.dart';
@@ -22,10 +21,6 @@ class SectionManagementScreen extends StatefulWidget {
 }
 
 class _SectionManagementScreenState extends State<SectionManagementScreen> {
-  final LocationSection allSection = LocationSection(
-    id: defaultId,
-    section: defaultLabel,
-  );
   late LocationSection selectedSection;
 
   final List<DataColumn> columns = [DataColumn(label: Text('구역'))];
@@ -37,8 +32,9 @@ class _SectionManagementScreenState extends State<SectionManagementScreen> {
   @override
   void initState() {
     super.initState();
-    selectedSection = allSection;
-    Provider.of<SectionProvider>(context, listen: false).reloadSections();
+    final sectionProvider = Provider.of<SectionProvider>(context, listen: false);
+    selectedSection = sectionProvider.allSection;
+    sectionProvider.reloadSections();
   }
 
   @override
@@ -46,7 +42,7 @@ class _SectionManagementScreenState extends State<SectionManagementScreen> {
     final sectionProvider = Provider.of<SectionProvider>(context);
 
     _dataSource = LocationSectionDataSource(
-      sections: (selectedSection == allSection)
+      sections: (selectedSection == sectionProvider.allSection)
           ? sectionProvider.sections
           : [selectedSection],
       selectedSections: selectedSections,
@@ -138,21 +134,7 @@ class _SectionManagementScreenState extends State<SectionManagementScreen> {
                                     selectedSection = section!;
                                     setState(() {});
                                   },
-                                  dropdownMenuEntries: [
-                                    DropdownMenuEntry<LocationSection>(
-                                      value: allSection,
-                                      label: allSection.section!,
-                                    ),
-                                    ...sectionProvider.sections.map(
-                                      (section) =>
-                                          DropdownMenuEntry<
-                                            LocationSection
-                                          >(
-                                            value: section,
-                                            label: section.section!,
-                                          ),
-                                    ),
-                                  ],
+                                  dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
                                 ),
                               ),
                             ],
@@ -203,6 +185,7 @@ class _SectionManagementScreenState extends State<SectionManagementScreen> {
                               String message = "";
                               if (result.successCount > 0) {
                                 dataTableKey = UniqueKey();
+                                selectedSection = sectionProvider.allSection;
                                 message =
                                     "${result.successCount}개의 구역을 삭제하였습니다.\n";
                               }

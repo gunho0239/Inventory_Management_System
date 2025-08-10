@@ -4,25 +4,28 @@ import 'package:inventory_management/models/part_unit.dart';
 import 'package:inventory_management/repository/part_unit_repository.dart';
 
 class UnitProvider extends ChangeNotifier {
+  PartUnit allUnit = PartUnit(id: defaultId, unit: defaultLabel);
   List<PartUnit> _units = [];
-  List<DropdownMenuItem<String>> _unitsDropdown = [];
+  List<DropdownMenuEntry<PartUnit>> _unitsDropdown = [];
 
   List<PartUnit> get units => _units;
-  List<DropdownMenuItem<String>> get unitsDropdown => _unitsDropdown;
+  List<DropdownMenuEntry<PartUnit>> get unitsDropdown => _unitsDropdown;
+  List<DropdownMenuEntry<PartUnit>> get unitsDropdownWithAll => [
+        DropdownMenuEntry<PartUnit>(
+          value: allUnit,
+          label: allUnit.unit!,
+        ),
+        ..._unitsDropdown
+      ];
 
   Future<void> reloadUnits() async {
     _units = await PartUnitRepository().getAllPartUnits();
     
-    _unitsDropdown = [
-      DropdownMenuItem<String>(
-        value: defaultId.toString(),
-        child: Text(defaultLabel),
-      ),
-      ..._units.map((unit) => DropdownMenuItem<String>(
-        value: unit.id.toString(),
-        child: Text(unit.unit!),
-      ))
-    ];
+    _unitsDropdown = _units.map((unit) => DropdownMenuEntry<PartUnit>(
+        value: unit,
+        label: unit.unit!,
+      )).toList();
+      
     notifyListeners();
   }
 }

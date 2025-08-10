@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:inventory_management/constants/default_dropdownmenuitem.dart';
+import 'package:inventory_management/api/api_client.dart';
 import 'package:inventory_management/datatable_source/part_data.dart';
 import 'package:inventory_management/main.dart';
 import 'package:inventory_management/models/part.dart';
 import 'package:inventory_management/models/part_type.dart';
+import 'package:inventory_management/providers/type_provider.dart';
+import 'package:inventory_management/repository/part_repository.dart';
 import 'package:inventory_management/screens/part_register_screen.dart';
 import 'package:inventory_management/widgets/buttons.dart';
+import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/title.dart';
+import 'package:provider/provider.dart';
 
 class PartManagementScreen extends StatefulWidget {
   const PartManagementScreen({super.key});
@@ -17,7 +21,8 @@ class PartManagementScreen extends StatefulWidget {
 
 class _PartManagementScreenState extends State<PartManagementScreen> {
   late PartType selectedType;
-  PartType allType = PartType(id: defaultId, type: defaultLabel);
+
+  late Part selectedPart;
   final TextEditingController specFieldController = TextEditingController();
 
   final List<DataColumn> columns = [
@@ -26,19 +31,45 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
     DataColumn(label: Text('제조사')),
     DataColumn(label: Text('단위')),
   ];
-  final List<DataRow> rows = [];
   late PartDataSource _dataSource;
+  Key dataTableKey = UniqueKey();
   List<Part> inquiredParts = [];
   Set<Part> selectedParts = {};
 
   @override
   void initState() {
     super.initState();
-    selectedType = allType;
+    final typeProvider = Provider.of<TypeProvider>(context, listen: false);
+    selectedType = typeProvider.allType;
+    typeProvider.reloadTypes();
+  }
+
+  void getParts() async {
+    final typeProvider = Provider.of<TypeProvider>(context, listen: false);
+    PartRepository partRepo = PartRepository();
+    final specText = specFieldController.text.trim();
+
+    if (selectedType == typeProvider.allType && specText == '') {
+      inquiredParts = await partRepo.getAllParts();
+    } 
+    else if (specText == '') {
+      inquiredParts = await partRepo.getPartsByType(selectedType.id!);
+    }
+    else if (selectedType == typeProvider.allType) {
+      inquiredParts = await partRepo.getPartsBySpecification(specText);
+    }
+    else {
+      inquiredParts = await partRepo.getPartsByTypeAndSpecification(selectedType.id!, specText);
+    }
+
+    selectedParts.clear();
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    final typeProvider = Provider.of<TypeProvider>(context);
+
     _dataSource = PartDataSource(
       parts: inquiredParts,
       selectedParts: selectedParts,
@@ -71,59 +102,38 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
                     children: [
                       Text("품명 :"),
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 5.0,
-                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
                         child: DropdownMenu<PartType>(
+                          width: 150,
                           initialSelection: selectedType,
                           onSelected: (type) {
                             selectedType = type!;
                           },
-                          dropdownMenuEntries: [
-                            DropdownMenuEntry<PartType>(
-                              value: allType,
-                              label: allType.type!,
-                            ),
-                            // ...sectionProvider.sections.map(
-                            //   (section) => DropdownMenuEntry<LocationSection>(
-                            //     value: section,
-                            //     label: section.section!,
-                            //   ),
-                            // ),
-                          ],
+                          dropdownMenuEntries:
+                              typeProvider.typesDropdownWithAll,
                         ),
                       ),
                       SizedBox(width: 20),
                       Text("규격 :"),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 5.0,
-                        ),
-                        child: DropdownMenu<PartType>(
+                      SizedBox(
+                        width: 180,
+                        child: TextField(
                           controller: specFieldController,
-                          initialSelection: selectedType,
-                          onSelected: (type) {
-                            selectedType = type!;
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                          onSubmitted: (sectionName) {
+                            getParts();
+                            dataTableKey = UniqueKey();
                           },
-                          dropdownMenuEntries: [
-                            DropdownMenuEntry<PartType>(
-                              value: allType,
-                              label: allType.type!,
-                            ),
-                            // ...sectionProvider.sections.map(
-                            //   (section) => DropdownMenuEntry<LocationSection>(
-                            //     value: section,
-                            //     label: section.section!,
-                            //   ),
-                            // ),
-                          ],
                         ),
                       ),
+                      SizedBox(width: 20),
                       ElevatedButton(
                         child: Icon(Icons.search, size: 30),
                         onPressed: () {
-                          // getLocation();
-                          // dataTableKey = UniqueKey();
+                          getParts();
+                          dataTableKey = UniqueKey();
                         },
                       ),
                       SizedBox(width: 20),
@@ -162,7 +172,7 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
                             ),
                             child: SingleChildScrollView(
                               child: PaginatedDataTable(
-                                // key: dataTableKey,
+                                key: dataTableKey,
                                 columns: columns,
                                 source: _dataSource,
                                 rowsPerPage: 10,
@@ -172,7 +182,48 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
                           ),
                         ),
                         DeleteButton(
-                          onPressed: () {
+                          onPressed: () async {
+                            if (selectedParts.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('삭제할 부품을 선택해주세요.')),
+                              );
+                              return;
+                            }
+                            final confirmed = await showDialog(
+                              context: context,
+                              builder: (context) => ConfirmDialog(
+                                message: "선택한 부품을 삭제하시겠습니까?",
+                              ),
+                            );
+
+                            if (!confirmed) return;
+                            List<int> partIds = selectedParts
+                                .map((part) => part.id!)
+                                .toList();
+                            DeleteResult result = await PartRepository()
+                                .removeParts(partIds);
+
+                            String message = "";
+                            if (result.successCount > 0) {
+                              dataTableKey = UniqueKey();
+                              message =
+                                  "${result.successCount}개의 부품을 삭제하였습니다.\n";
+                            }
+                            if (result.failedCount > 0) {
+                              message =
+                                  "${result.successCount}개 삭제 완료\n${result.failedCount}개 삭제 실패!";
+                            }
+
+                            if (!mounted) return;
+                            showDialog(
+                              context: context,
+                              builder: (context) => ResultDialog(
+                                message: message,
+                              ),
+                            );
+
+                            selectedParts.clear();
+                            getParts();
                           },
                         ),
                       ],

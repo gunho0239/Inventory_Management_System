@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/api/api_client.dart';
-import 'package:inventory_management/constants/default_dropdownmenuitem.dart';
 import 'package:inventory_management/datatable_source/part_maker_data.dart';
 import 'package:inventory_management/main.dart';
 import 'package:inventory_management/models/part_maker.dart';
@@ -19,19 +18,20 @@ class MakerManagementScreen extends StatefulWidget {
 }
 
 class _MakerManagementScreenState extends State<MakerManagementScreen> {
-  PartMaker allMaker = PartMaker(id: defaultId, maker: defaultLabel);
   late PartMaker selectedMaker;
 
   final List<DataColumn> columns = [DataColumn(label: Text('제조사'))];
 
   Set<PartMaker> selectedMakers = {};
   late PartMakerDataSource _dataSource;
+  Key dataTableKey = UniqueKey();
 
   @override
   void initState() {
     super.initState();
-    selectedMaker = allMaker;
-    Provider.of<MakerProvider>(context, listen: false).reloadMakers();
+    final makerProvider = Provider.of<MakerProvider>(context, listen: false);
+    selectedMaker = makerProvider.allMaker;;
+    makerProvider.reloadMakers();
   }
 
   @override
@@ -39,7 +39,7 @@ class _MakerManagementScreenState extends State<MakerManagementScreen> {
     final makerProvider = Provider.of<MakerProvider>(context);
 
     _dataSource = PartMakerDataSource(
-      makers: (selectedMaker == allMaker) ? makerProvider.makers : [selectedMaker],
+      makers: (selectedMaker == makerProvider.allMaker) ? makerProvider.makers : [selectedMaker],
       selectedMakers: selectedMakers,
       onSelectChanged: (maker, selected) {
         setState(() {
@@ -105,18 +105,7 @@ class _MakerManagementScreenState extends State<MakerManagementScreen> {
                                   selectedMaker = maker!;
                                   setState(() {});
                                 },
-                                dropdownMenuEntries: [
-                                  DropdownMenuEntry<PartMaker>(
-                                    value: allMaker,
-                                    label: allMaker.maker!,
-                                  ),
-                                  ...makerProvider.makers.map(
-                                    (maker) => DropdownMenuEntry<PartMaker>(
-                                      value: maker,
-                                      label: maker.maker!,
-                                    ),
-                                  ),
-                                ],
+                                dropdownMenuEntries: makerProvider.makersDropdownWithAll,
                               ),
                             ),
                           ],
@@ -129,6 +118,7 @@ class _MakerManagementScreenState extends State<MakerManagementScreen> {
                             ),
                             child: SingleChildScrollView(
                               child: PaginatedDataTable(
+                                key: dataTableKey,
                                 columns: columns,
                                 source: _dataSource,
                                 rowsPerPage: 10,
@@ -163,6 +153,8 @@ class _MakerManagementScreenState extends State<MakerManagementScreen> {
 
                               String message = "";
                               if (result.successCount > 0) {
+                                dataTableKey = UniqueKey();
+                                selectedMaker = makerProvider.allMaker;
                                 message =
                                     "${result.successCount}개의 제조사를 삭제하였습니다.\n";
                               }
