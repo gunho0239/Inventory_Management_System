@@ -75,36 +75,14 @@ class _SectionManagementScreenState extends State<SectionManagementScreen> {
                     spacing: 20,
                     children: [
                       GoBackButton(),
-                      ElevatedButton(
-                        style: AppButtonStyle.newPage,
-                        onPressed: () async {
-                          final pop = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SectionRegisterScreen(),
-                            ),
-                          );
-                          if (pop == true) {
-                            sectionProvider.reloadSections();
-                            setState(() {});
-                          }
-                        },
-                        child: Row(
-                          spacing: 10,
-                          children: [
-                            Icon(Icons.add, size: 20),
-                            Text('새로운 구역', style: TextStyle(fontSize: 18)),
-                          ],
-                        ),
-                      ),
-                      ElevatedButton(
-                        child: Icon(Icons.refresh, size: 30),
+                      RefreshButton(
                         onPressed: () {
                           setState(() {
                             sectionProvider.reloadSections();
                           });
                         },
                       ),
+                      RegisterPageButton(InventoryMenu.sectionRegister,),
                     ],
                   ),
                 ),
@@ -118,26 +96,17 @@ class _SectionManagementScreenState extends State<SectionManagementScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Row(
-                            children: [
-                              Text("구역 :"),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 5.0,
-                                  horizontal: 10.0,
-                                ),
-                                child: DropdownMenu<LocationSection>(
-                                  menuHeight: 400,
-                                  initialSelection: selectedSection,
-                                  onSelected: (section) {
-                                    selectedSection = section!;
-                                    setState(() {});
-                                  },
-                                  dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
-                                ),
-                              ),
-                            ],
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                          child: DropdownMenu<LocationSection>(
+                            label: Text("구역"),
+                            enableFilter: true,
+                            menuHeight: 400,
+                            initialSelection: selectedSection,
+                            onSelected: (section) {
+                              selectedSection = section!;
+                              setState(() {});
+                            },
+                            dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
                           ),
                         ),
                         SizedBox(

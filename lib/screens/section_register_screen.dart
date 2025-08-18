@@ -96,32 +96,20 @@ class _SectionRegisterScreenState extends State<SectionRegisterScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(width: 10),
-                        Row(
-                          children: [
-                            Text("구역 :"),
-                            SizedBox(
-                              width: 180,
-                              child: TextField(
-                                controller: sectionFieldController,
-                                focusNode: _sectionFieldFocusNode,
-                                textAlign: TextAlign.center,
-                                decoration: InputDecoration(
-                                  hintText: '번호를 제외하고 입력',
-                                ),
-                                onSubmitted: (sectionName) {
-                                  addSection(context, sectionName.trim());
-                                },
-                              ),
+                        SizedBox(
+                          width: 190,
+                          child: TextField(
+                            controller: sectionFieldController,
+                            focusNode: _sectionFieldFocusNode,
+                            decoration: InputDecoration(
+                              labelText: "구역 입력",
+                              hintText: '번호를 제외하고 입력',
+                              border: OutlineInputBorder(),
                             ),
-                            ElevatedButton(
-                              child: Icon(Icons.add, size: 30),
-                              onPressed: () {
-                                String sectionName = sectionFieldController.text
-                                    .trim();
-                                addSection(context, sectionName);
-                              },
-                            ),
-                          ],
+                            onSubmitted: (sectionName) {
+                              addSection(context, sectionName.trim());
+                            },
+                          ),
                         ),
                         SizedBox(width: 50),
                         Padding(

@@ -3,7 +3,9 @@ import 'package:inventory_management/api/api_client.dart';
 import 'package:inventory_management/datatable_source/part_data.dart';
 import 'package:inventory_management/main.dart';
 import 'package:inventory_management/models/part.dart';
+import 'package:inventory_management/models/part_maker.dart';
 import 'package:inventory_management/models/part_type.dart';
+import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/providers/type_provider.dart';
 import 'package:inventory_management/repository/part_repository.dart';
 import 'package:inventory_management/screens/part_register_screen.dart';
@@ -21,8 +23,8 @@ class PartManagementScreen extends StatefulWidget {
 
 class _PartManagementScreenState extends State<PartManagementScreen> {
   late PartType selectedType;
+  late PartMaker selectedMaker;
 
-  late Part selectedPart;
   final TextEditingController specFieldController = TextEditingController();
 
   final List<DataColumn> columns = [
@@ -42,25 +44,31 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
     final typeProvider = Provider.of<TypeProvider>(context, listen: false);
     selectedType = typeProvider.allType;
     typeProvider.reloadTypes();
+
+    final makerProvider = Provider.of<MakerProvider>(context, listen: false);
+    selectedMaker = makerProvider.allMaker;
+    makerProvider.reloadMakers();
   }
 
   void getParts() async {
     final typeProvider = Provider.of<TypeProvider>(context, listen: false);
+    final makerProvider = Provider.of<MakerProvider>(context, listen: false);
     PartRepository partRepo = PartRepository();
+    
+    final isAllType = selectedType == typeProvider.allType;
+    final isAllMaker = selectedMaker == makerProvider.allMaker;
     final specText = specFieldController.text.trim();
-
-    if (selectedType == typeProvider.allType && specText == '') {
-      inquiredParts = await partRepo.getAllParts();
-    } 
-    else if (specText == '') {
-      inquiredParts = await partRepo.getPartsByType(selectedType.id!);
-    }
-    else if (selectedType == typeProvider.allType) {
-      inquiredParts = await partRepo.getPartsBySpecification(specText);
-    }
-    else {
-      inquiredParts = await partRepo.getPartsByTypeAndSpecification(selectedType.id!, specText);
-    }
+    
+    inquiredParts = await switch ((isAllType, isAllMaker, specText.isEmpty)) {
+      (true, true, true) => partRepo.getAllParts(),
+      (false, true, true) => partRepo.getPartsByType(selectedType.id!),
+      (true, false, true) => partRepo.getPartsByMaker(selectedMaker.id!),
+      _ => partRepo.getPartsByFilter(
+              isAllType ? null : selectedType.id!,
+              isAllMaker ? null : selectedMaker.id!,
+              specText.isEmpty ? null : specText,
+            ),
+    };
 
     selectedParts.clear();
     setState(() {});
@@ -69,6 +77,7 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
   @override
   Widget build(BuildContext context) {
     final typeProvider = Provider.of<TypeProvider>(context);
+    final makerProvider = Provider.of<MakerProvider>(context);
 
     _dataSource = PartDataSource(
       parts: inquiredParts,
@@ -98,65 +107,71 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
               child: Column(
                 children: [
                   Row(
-                    spacing: 5,
+                    spacing: 20,
                     children: [
-                      Text("품명 :"),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 5.0),
                         child: DropdownMenu<PartType>(
+                          label: Text("품명"),
+                          enableFilter: true,
+                          menuHeight: 400,
                           width: 150,
-                          initialSelection: selectedType,
+                          // initialSelection: selectedType,
                           onSelected: (type) {
                             selectedType = type!;
+                            getParts();
+                            dataTableKey = UniqueKey();
                           },
                           dropdownMenuEntries:
                               typeProvider.typesDropdownWithAll,
                         ),
                       ),
-                      SizedBox(width: 20),
-                      Text("규격 :"),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: DropdownMenu<PartMaker>(
+                          label: Text("제조사"),
+                          enableFilter: true,
+                          menuHeight: 400,
+                          width: 150,
+                          // initialSelection: selectedType,
+                          onSelected: (maker) {
+                            selectedMaker = maker!;
+                            getParts();
+                            dataTableKey = UniqueKey();
+                          },
+                          dropdownMenuEntries:
+                              makerProvider.makersDropdownWithAll,
+                        ),
+                      ),
                       SizedBox(
                         width: 180,
                         child: TextField(
                           controller: specFieldController,
                           decoration: InputDecoration(
+                            labelText: "규격",
+                            hintText: "입력 후 엔터",
                             border: OutlineInputBorder(),
                           ),
                           onSubmitted: (sectionName) {
-                            getParts();
                             dataTableKey = UniqueKey();
+                            getParts();
                           },
                         ),
                       ),
-                      SizedBox(width: 20),
-                      ElevatedButton(
-                        child: Icon(Icons.search, size: 30),
-                        onPressed: () {
-                          getParts();
-                          dataTableKey = UniqueKey();
-                        },
-                      ),
-                      SizedBox(width: 20),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepPurple,
-                          foregroundColor: Colors.white,
-                        ),
-                        onPressed: () {
-                          Navigator.push(
+                      RegisterPageButton(InventoryMenu.partRegister,
+                        onPressed: () async {
+                          final refresh = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => PartRegisterScreen(),
                             ),
                           );
+
+                          if (refresh == true) {
+                            getParts();
+                            dataTableKey = UniqueKey();
+                          }
                         },
-                        child: Row(
-                          spacing: 5,
-                          children: [
-                            Icon(Icons.add, size: 30),
-                            Text('새로운 부품', style: TextStyle(fontSize: 18)),
-                          ],
-                        ),
                       ),
                     ],
                   ),

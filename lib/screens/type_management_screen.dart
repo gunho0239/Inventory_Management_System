@@ -5,8 +5,6 @@ import 'package:inventory_management/main.dart';
 import 'package:inventory_management/models/part_type.dart';
 import 'package:inventory_management/providers/type_provider.dart';
 import 'package:inventory_management/repository/part_type_repository.dart';
-import 'package:inventory_management/screens/type_register_screen.dart';
-import 'package:inventory_management/style/style.dart';
 import 'package:inventory_management/widgets/buttons.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/title.dart';
@@ -73,32 +71,14 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                     spacing: 20,
                     children: [
                       GoBackButton(),
-                      ElevatedButton(
-                        style: AppButtonStyle.newPage,
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const TypeRegisterScreen(),
-                            ),
-                          );
-                        },
-                        child: Row(
-                          spacing: 10,
-                          children: [
-                            Icon(Icons.add, size: 20),
-                            Text('새로운 품명', style: TextStyle(fontSize: 18)),
-                          ],
-                        ),
-                      ),
-                      ElevatedButton(
-                        child: Icon(Icons.refresh, size: 30),
+                      RefreshButton(
                         onPressed: () {
                           setState(() {
                             typeProvider.reloadTypes();
                           });
                         },
                       ),
+                      RegisterPageButton(InventoryMenu.typeRegister,),
                     ],
                   ),
                 ),
@@ -111,25 +91,21 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Text("품명 :"),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 5.0,
-                                horizontal: 10.0,
-                              ),
-                              child: DropdownMenu<PartType>(
-                                menuHeight: 400,
-                                initialSelection: selectedType,
-                                onSelected: (type) {
-                                  selectedType = type!;
-                                  setState(() {});
-                                },
-                                dropdownMenuEntries: typeProvider.typesDropdownWithAll,
-                              ),
-                            ),
-                          ],
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 5.0,
+                            horizontal: 10.0,
+                          ),
+                          child: DropdownMenu<PartType>(
+                            label: Text("품명"),
+                            menuHeight: 400,
+                            initialSelection: selectedType,
+                            onSelected: (type) {
+                              selectedType = type!;
+                              setState(() {});
+                            },
+                            dropdownMenuEntries: typeProvider.typesDropdownWithAll,
+                          ),
                         ),
                         SizedBox(
                           width: 500,

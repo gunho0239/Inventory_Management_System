@@ -96,29 +96,20 @@ class _TypeRegisterScreenState extends State<TypeRegisterScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(width: 10),
-                        Row(
-                          children: [
-                            Text("품명 :"),
-                            SizedBox(
-                              width: 180,
-                              child: TextField(
-                                controller: typeFieldController,
-                                focusNode: _typeFieldFocusNode,
-                                textAlign: TextAlign.center,
-                                onSubmitted: (typeName) {
-                                  addType(context, typeName.trim());
-                                },
-                              ),
+                        SizedBox(
+                          width: 180,
+                          child: TextField(
+                            controller: typeFieldController,
+                            focusNode: _typeFieldFocusNode,
+                            decoration: InputDecoration(
+                              labelText: "품명 입력",
+                              hintText: "입력 후 엔터",
+                              border: OutlineInputBorder(),
                             ),
-                            ElevatedButton(
-                              child: Icon(Icons.add, size: 30),
-                              onPressed: () {
-                                String typeName = typeFieldController.text
-                                    .trim();
-                                addType(context, typeName);
-                              },
-                            ),
-                          ],
+                            onSubmitted: (typeName) {
+                              addType(context, typeName.trim());
+                            },
+                          ),
                         ),
                         SizedBox(width: 50),
                         Padding(

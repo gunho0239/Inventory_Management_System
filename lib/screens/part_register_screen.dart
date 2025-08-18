@@ -26,6 +26,8 @@ class PartRegisterScreen extends StatefulWidget {
 }
 
 class _PartRegisterScreenState extends State<PartRegisterScreen> {
+  bool refresh = false;
+
   final TextEditingController specFieldController = TextEditingController();
   final FocusNode _specFieldFocusNode = FocusNode();
   PartType? selectedType;
@@ -43,6 +45,34 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
   Set<Part> parts = {};
   Set<Part> selectedParts = {};
 
+  void addPart() {
+    String spec = specFieldController.text.trim();
+
+    if (spec.isNotEmpty &&
+        selectedType != null &&
+        selectedMaker != null &&
+        selectedUnit != null) 
+    {
+      Part newPart = Part(
+        type: selectedType!,
+        maker: selectedMaker!,
+        unit: selectedUnit!,
+        specification: spec,
+      );
+      setState(() {
+        parts.add(newPart);
+      });
+      specFieldController.clear();
+      FocusScope.of(context).requestFocus(_specFieldFocusNode);
+    } 
+    else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('모든 항목을 입력해주세요.'),
+        ),
+      );
+    }
+  }
 
   Future<int> registerAllParts() async {
     if (parts.isEmpty) return 0;
@@ -111,7 +141,8 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                   child: Row(
                     spacing: 20,
                     children: [
-                      GoBackButton(),
+                      GoBackButton(refresh: refresh),
+                      // GoBackButton(),
                       ElevatedButton(
                         style: AppButtonStyle.newPage,
                         onPressed: () {
@@ -162,102 +193,62 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                       children: [
                         SizedBox(width: 10),
                         Column(
-                          spacing: 10,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing: 20,
                           children: [
-                            Row(
-                              children: [
-                                SizedBox(width: 60, child: Text("규격 :")),
-                                SizedBox(
-                                  width: 180,
-                                  child: TextField(
-                                    controller: specFieldController,
-                                    focusNode: _specFieldFocusNode,
-                                    textAlign: TextAlign.start,
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    onSubmitted: (sectionName) {
-                                      // addSection(context, sectionName.trim());
-                                    },
-                                  ),
-                                ),
-                              ],
+                            DropdownMenu<PartType>(
+                              label: Text("품명"),
+                              enableFilter: true,
+                              menuHeight: 400,
+                              width: 180,
+                              initialSelection: selectedType,
+                              onSelected: (type) {
+                                selectedType = type!;
+                              },
+                              dropdownMenuEntries: typeProvider.typesDropdown,
                             ),
-                            Row(
-                              children: [
-                                SizedBox(width: 60, child: Text("품명 :")),
-                                DropdownMenu<PartType>(
-                                  menuHeight: 400,
-                                  width: 180,
-                                  initialSelection: selectedType,
-                                  onSelected: (type) {
-                                    selectedType = type!;
-                                  },
-                                  dropdownMenuEntries: typeProvider.typesDropdown,
-                                ),
-                              ],
+                            DropdownMenu<PartMaker>(
+                              label: Text("제조사"),
+                              enableFilter: true,
+                              menuHeight: 400,
+                              width: 180,
+                              initialSelection: selectedMaker,
+                              onSelected: (maker) {
+                                selectedMaker = maker!;
+                              },
+                              dropdownMenuEntries: makerProvider.makersDropdown,
                             ),
-                            Row(
-                              children: [
-                                SizedBox(width: 60, child: Text("제조사 :")),
-                                DropdownMenu<PartMaker>(
-                                  menuHeight: 400,
-                                  width: 180,
-                                  initialSelection: selectedMaker,
-                                  onSelected: (maker) {
-                                    selectedMaker = maker!;
-                                  },
-                                  dropdownMenuEntries: makerProvider.makersDropdown,
-                                ),
-                              ],
+                            DropdownMenu<PartUnit>(
+                              label: Text("단위"),
+                              enableFilter: true,
+                              menuHeight: 400,
+                              width: 180,
+                              initialSelection: selectedUnit,
+                              onSelected: (unit) {
+                                selectedUnit = unit!;
+                              },
+                              dropdownMenuEntries: unitProvider.unitsDropdown,
                             ),
-                            Row(
-                              children: [
-                                SizedBox(width: 60, child: Text("단위 :")),
-                                DropdownMenu<PartUnit>(
-                                  menuHeight: 400,
-                                  width: 180,
-                                  initialSelection: selectedUnit,
-                                  onSelected: (unit) {
-                                    selectedUnit = unit!;
-                                  },
-                                  dropdownMenuEntries: unitProvider.unitsDropdown,
+                            SizedBox(
+                              width: 180,
+                              child: TextField(
+                                controller: specFieldController,
+                                focusNode: _specFieldFocusNode,
+                                textAlign: TextAlign.start,
+                                decoration: InputDecoration(
+                                  labelText: "규격",
+                                  hintText: "입력 후 엔터",
+                                  border: OutlineInputBorder(),
                                 ),
-                              ],
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(100, 20, 0, 0),
-                              child: ElevatedButton(
-                                child: Icon(Icons.add, size: 30),
-                                onPressed: () {
-                                  String spec = specFieldController.text.trim();
-
-                                  if (spec.isNotEmpty &&
-                                      selectedType != null &&
-                                      selectedMaker != null &&
-                                      selectedUnit != null) 
-                                  {
-                                    Part newPart = Part(
-                                      type: selectedType!,
-                                      maker: selectedMaker!,
-                                      unit: selectedUnit!,
-                                      specification: spec,
-                                    );
-                                    setState(() {
-                                      parts.add(newPart);
-                                    });
-                                    specFieldController.clear();
-                                    FocusScope.of(context).requestFocus(_specFieldFocusNode);
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('모든 항목을 입력해주세요.'),
-                                      ),
-                                    );
-                                  }
+                                onSubmitted: (sectionName) {
+                                  addPart();
                                 },
                               ),
+                            ),
+                            ElevatedButton(
+                              child: Icon(Icons.add, size: 30),
+                              onPressed: () {
+                                addPart();
+                              },
                             ),
                           ],
                         ),
@@ -296,13 +287,11 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                                 if (!mounted) return;
 
                                 if (count > 0) {
-                                  parts.clear();
-                                  dataTableKey = UniqueKey();
-                                  // Provider.of<PartProvider>(
-                                  //   context,
-                                  //   listen: false,
-                                  // ).reloadParts();
-                                  setState(() {});
+                                  setState(() {
+                                    parts.clear();
+                                    dataTableKey = UniqueKey();
+                                    refresh = true;
+                                  });
                                   showDialog(
                                     context: context,
                                     builder: (context) => ResultDialog(

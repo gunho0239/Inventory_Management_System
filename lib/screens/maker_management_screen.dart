@@ -5,6 +5,7 @@ import 'package:inventory_management/main.dart';
 import 'package:inventory_management/models/part_maker.dart';
 import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/repository/part_maker_repository.dart';
+import 'package:inventory_management/screens/maker_register_screen.dart';
 import 'package:inventory_management/widgets/buttons.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/title.dart';
@@ -70,7 +71,6 @@ class _MakerManagementScreenState extends State<MakerManagementScreen> {
                     spacing: 20,
                     children: [
                       GoBackButton(),
-                      RegisterPageButton(InventoryMenu.makerRegister,),
                       RefreshButton(
                         onPressed: () {
                           setState(() {
@@ -78,6 +78,7 @@ class _MakerManagementScreenState extends State<MakerManagementScreen> {
                           });
                         },
                       ),
+                      RegisterPageButton(InventoryMenu.makerRegister,),
                     ],
                   ),
                 ),
@@ -92,13 +93,13 @@ class _MakerManagementScreenState extends State<MakerManagementScreen> {
                       children: [
                         Row(
                           children: [
-                            Text("제조사 :"),
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                 vertical: 5.0,
                                 horizontal: 10.0,
                               ),
                               child: DropdownMenu<PartMaker>(
+                                label: Text("제조사"),
                                 menuHeight: 400,
                                 initialSelection: selectedMaker,
                                 onSelected: (maker) {

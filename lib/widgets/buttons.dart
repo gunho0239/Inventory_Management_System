@@ -2,20 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:inventory_management/main.dart';
 import 'package:inventory_management/screens/location_register_screen.dart';
 import 'package:inventory_management/screens/maker_register_screen.dart';
+import 'package:inventory_management/screens/part_register_screen.dart';
 import 'package:inventory_management/screens/section_register_screen.dart';
 import 'package:inventory_management/screens/type_register_screen.dart';
 import 'package:inventory_management/screens/unit_register_screen.dart';
 import 'package:inventory_management/style/style.dart';
 
 class GoBackButton extends StatelessWidget {
-  const GoBackButton({super.key});
+  final bool refresh;
+
+  // const GoBackButton({super.key});
+  const GoBackButton({super.key, this.refresh = false});
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: AppButtonStyle.backPage,
       onPressed: () {
-        Navigator.pop(context);
+        Navigator.pop(context, refresh);
+        // Navigator.pop(context);
       },
       child: Icon(Icons.arrow_back, size: 30),
     );
@@ -25,8 +30,9 @@ class GoBackButton extends StatelessWidget {
 class RegisterPageButton extends StatelessWidget {
   late final String menuName;
   late final Widget? registerScreen;
+  final VoidCallback? onPressed;
 
-  RegisterPageButton(InventoryMenu menu, {super.key}) {
+  RegisterPageButton(InventoryMenu menu, {super.key, this.onPressed}) {
     switch (menu) {
       case InventoryMenu.stockRegister:
         menuName = '재고';
@@ -34,7 +40,7 @@ class RegisterPageButton extends StatelessWidget {
         break;
       case InventoryMenu.partRegister:
         menuName = '부품';
-        // registerScreen = const PartRegisterScreen();
+        registerScreen = const PartRegisterScreen();
         break;
       case InventoryMenu.typeRegister:
         menuName = '품명';
@@ -65,7 +71,7 @@ class RegisterPageButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: AppButtonStyle.newPage,
-      onPressed: () {
+      onPressed: onPressed ?? () {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => registerScreen!),
@@ -90,6 +96,7 @@ class RefreshButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
+      style: AppButtonStyle.refresh,
       onPressed: onPressed,
       child: Icon(Icons.refresh, size: 30),
     );
@@ -130,6 +137,69 @@ class DeleteButton extends StatelessWidget {
         children: [
           Icon(Icons.delete, size: 30),
           Text('삭제', style: TextStyle(fontSize: 18)),
+        ],
+      ),
+    );
+  }
+}
+
+class ReleaseButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const ReleaseButton({super.key, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: AppButtonStyle.newPage,
+      child: Row(
+        spacing: 5,
+        children: [
+          Icon(Icons.logout, size: 30),
+          Text('출고(사용)', style: TextStyle(fontSize: 18)),
+        ],
+      ),
+    );
+  }
+}
+
+class QuantityChangeButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const QuantityChangeButton({super.key, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: AppButtonStyle.newPage,
+      child: Row(
+        spacing: 5,
+        children: [
+          Icon(Icons.exposure_plus_1, size: 30),
+          Text('수량변경', style: TextStyle(fontSize: 18)),
+        ],
+      ),
+    );
+  }
+}
+
+class LocationChangeButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const LocationChangeButton({super.key, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: AppButtonStyle.newPage,
+      child: Row(
+        spacing: 5,
+        children: [
+          Icon(Icons.edit_location_outlined, size: 30),
+          Text('위치변경', style: TextStyle(fontSize: 18)),
         ],
       ),
     );

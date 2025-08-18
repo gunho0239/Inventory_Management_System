@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart' hide Title;
+import 'package:flutter/material.dart';
 import 'package:inventory_management/api/api_client.dart';
-import 'package:inventory_management/constants/default_dropdownmenuitem.dart';
 import 'package:inventory_management/datatable_source/location_data.dart';
 import 'package:inventory_management/main.dart';
 import 'package:inventory_management/models/location.dart';
@@ -22,10 +21,7 @@ class LocationManagementScreen extends StatefulWidget {
 }
 
 class _LocationManagementScreenState extends State<LocationManagementScreen> {
-  LocationSection allSection = LocationSection(id: defaultId, section: defaultLabel);
   late LocationSection selectedSection;
-  List<LocationSection>? sections;
-  List<DropdownMenuItem<LocationSection>> sectionsDropdown = [];
 
   final List<DataColumn> columns = [
     DataColumn(label: Text('구역')),
@@ -39,14 +35,16 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
   @override
   void initState() {
     super.initState();
-    selectedSection = allSection;
-    Provider.of<SectionProvider>(context, listen: false).reloadSections();
+    final sectionProvider = Provider.of<SectionProvider>(context, listen: false);
+    selectedSection = sectionProvider.allSection;
+    sectionProvider.reloadSections();
+    // getLocations();
   }
 
-  void getLocation() async {
+  void getLocations() async {
     LocationRepository locationRepo = LocationRepository();
 
-    if (selectedSection == allSection) {
+    if (selectedSection == Provider.of<SectionProvider>(context, listen: false).allSection) {
       inquiredLocations = await locationRepo.getAllLocations();
     } else {
       inquiredLocations = await locationRepo.getLocationsBySection(
@@ -91,60 +89,39 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
                 children: [
                   Row(
                     children: [
-                      Text("구역 :"),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           vertical: 5.0,
                           horizontal: 10.0,
                         ),
                         child: DropdownMenu<LocationSection>(
+                          label: Text("구역"),
+                          enableFilter: true,
                           menuHeight: 400,
-                          initialSelection: selectedSection,
+                          // initialSelection: selectedSection,
                           onSelected: (section) {
                             selectedSection = section!;
+                            getLocations();
+                            dataTableKey = UniqueKey();
                           },
-                          dropdownMenuEntries: [
-                            DropdownMenuEntry<LocationSection>(
-                              value: allSection,
-                              label: allSection.section!,
-                            ),
-                            ...sectionProvider.sections.map(
-                              (section) => DropdownMenuEntry<LocationSection>(
-                                value: section,
-                                label: section.section!,
-                              ),
-                            ),
-                          ],
+                          dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
                         ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          getLocation();
-                          dataTableKey = UniqueKey(); 
-                        },
-                        child: Icon(Icons.search, size: 30),
                       ),
                       SizedBox(width: 20),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepPurple,
-                          foregroundColor: Colors.white,
-                        ),
-                        onPressed: () {
-                          Navigator.push(
+                      RegisterPageButton(InventoryMenu.locationRegister,
+                        onPressed: () async {
+                          final refresh = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => LocationRegisterScreen(),
                             ),
                           );
-                        },
-                        child: Row(
-                          spacing: 5,
-                          children: [
-                            Icon(Icons.add, size: 30),
-                            Text('새로운 위치', style: TextStyle(fontSize: 18)),
-                          ],
-                        ),
+
+                          if (refresh == true) {
+                            dataTableKey = UniqueKey();
+                            getLocations();
+                          }
+                        }
                       ),
                     ],
                   ),
@@ -193,6 +170,7 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
 
                             String message = "";
                             if (result.successCount > 0) {
+                              dataTableKey = UniqueKey();
                               message =
                                   "${result.successCount}개의 위치를 삭제하였습니다.\n";
                             }
@@ -210,7 +188,7 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
                             );
 
                             selectedLocations.clear();
-                            getLocation();
+                            getLocations();
                           },
                         ),
                       ],

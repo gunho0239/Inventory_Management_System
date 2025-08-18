@@ -9,7 +9,7 @@ import 'package:inventory_management/providers/section_provider.dart';
 import 'package:inventory_management/widgets/navigationbar.dart';
 
 import 'screens/location_management_screen.dart';
-import 'screens/stock_inquiry_screen.dart';
+import 'screens/stock_management_screen.dart';
 import 'screens/stock_register_screen.dart';
 
 void main() {
@@ -39,7 +39,7 @@ class _MainAppState extends State<MainApp> {
   InventoryMenu selectedMenu = InventoryMenu.stockManagement;
 
   final Map<InventoryMenu, Widget> pages = {
-    InventoryMenu.stockManagement: StockInquiryScreen(),
+    InventoryMenu.stockManagement: StockManagementScreen(),
     InventoryMenu.stockRegister: StockRegisterScreen(),
     InventoryMenu.partManagement: PartManagementScreen(),
     InventoryMenu.locationManagement: LocationManagementScreen(),

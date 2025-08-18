@@ -14,15 +14,46 @@ class PartApi {
     return (data as List).map((json) => Part.fromJson(json)).toList();
   }
 
-  Future<List<Part>> fetchPartsBySpecification(String spec) async {
-    final data = await ApiClient.get('${Endpoints.parts}/search?specification=$spec');
+  Future<List<Part>> fetchPartsByMaker(int makerId) async {
+    final data = await ApiClient.get('${Endpoints.parts}/maker/$makerId');
     return (data as List).map((json) => Part.fromJson(json)).toList();
   }
 
-  Future<List<Part>> fetchPartsByTypeAndSpecification(int typeId, String spec) async {
-    final data = await ApiClient.get('${Endpoints.parts}/search/combined?typeId=$typeId&specification=$spec');
+  Future<List<Part>> fetchPartsByFilter(int? typeId, int? makerId, String? spec) async {
+    final queryParameters = {
+      'typeId': typeId?.toString(),
+      'makerId': makerId?.toString(),
+      'specification': spec
+    }..removeWhere((key, value) => value == null);
+
+    final data = await ApiClient.get('${Endpoints.parts}/search?${Uri(queryParameters: queryParameters).query}');
     return (data as List).map((json) => Part.fromJson(json)).toList();
   }
+
+  // Future<List<Part>> fetchPartsBySpecification(String spec) async {
+  //   final data = await ApiClient.get('${Endpoints.parts}/search?specification=$spec');
+  //   return (data as List).map((json) => Part.fromJson(json)).toList();
+  // }
+
+  // Future<List<Part>> fetchPartsByTypeAndMaker(int typeId, int makerId) async {
+  //   final data = await ApiClient.get('${Endpoints.parts}/search/combined?typeId=$typeId&makerId=$makerId');
+  //   return (data as List).map((json) => Part.fromJson(json)).toList();
+  // }
+
+  // Future<List<Part>> fetchPartsByTypeAndSpecification(int typeId, String spec) async {
+  //   final data = await ApiClient.get('${Endpoints.parts}/search/combined?typeId=$typeId&specification=$spec');
+  //   return (data as List).map((json) => Part.fromJson(json)).toList();
+  // }
+
+  // Future<List<Part>> fetchPartsByMakerAndSpecification(int makerId, String spec) async {
+  //   final data = await ApiClient.get('${Endpoints.parts}/search/combined?makerId=$makerId&specification=$spec');
+  //   return (data as List).map((json) => Part.fromJson(json)).toList();
+  // }
+
+  // Future<List<Part>> fetchPartsByTypeAndMakerAndSpecification(int typeId, int makerId, String spec) async {
+  //   final data = await ApiClient.get('${Endpoints.parts}/search/combined?typeId=$typeId&makerId=$makerId&specification=$spec');
+  //   return (data as List).map((json) => Part.fromJson(json)).toList();
+  // }
 
   Future<Part> createPart(Part part) async {
     final registeredData = await ApiClient.post('${Endpoints.parts}/single', part.toJson());

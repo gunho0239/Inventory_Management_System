@@ -9,6 +9,10 @@ class ScreenTitle extends StatelessWidget {
 
   Widget getIcon() {
     switch (menu) {
+      case InventoryMenu.stockManagement:
+        return Icon(MenuIcons.stockInquiry, size: 30);
+      case InventoryMenu.stockRegister:
+        return Icon(MenuIcons.stockRegister, size: 30);
       case InventoryMenu.partManagement:
       case InventoryMenu.partRegister:
         return Icon(MenuIcons.part, size: 30);
@@ -71,15 +75,23 @@ class ScreenTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 50.0, vertical: 20.0),
-      child: Row(
-        spacing: 10,
-        children: [
-          getIcon(),
-          Text(
-            title,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-        ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10.0),
+          color: const Color.fromARGB(22, 0, 0, 0),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 10,
+          children: [
+            getIcon(),
+            Text(
+              title,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -96,29 +96,20 @@ class _MakerRegisterScreenState extends State<MakerRegisterScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(width: 10),
-                        Row(
-                          children: [
-                            Text("제조사 :"),
-                            SizedBox(
-                              width: 180,
-                              child: TextField(
-                                controller: makerFieldController,
-                                focusNode: _makerFieldFocusNode,
-                                textAlign: TextAlign.center,
-                                onSubmitted: (makerName) {
-                                  addMaker(context, makerName.trim());
-                                },
-                              ),
+                        SizedBox(
+                          width: 180,
+                          child: TextField(
+                            controller: makerFieldController,
+                            focusNode: _makerFieldFocusNode,
+                            decoration: InputDecoration(
+                              labelText: "제조사 입력",
+                              hintText: "입력 후 엔터",
+                              border: OutlineInputBorder(),
                             ),
-                            ElevatedButton(
-                              child: Icon(Icons.add, size: 30),
-                              onPressed: () {
-                                String makerName = makerFieldController.text
-                                    .trim();
-                                addMaker(context, makerName);
-                              },
-                            ),
-                          ],
+                            onSubmitted: (makerName) {
+                              addMaker(context, makerName.trim());
+                            },
+                          ),
                         ),
                         SizedBox(width: 50),
                         Padding(

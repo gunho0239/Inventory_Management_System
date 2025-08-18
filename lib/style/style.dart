@@ -16,4 +16,9 @@ class AppButtonStyle {
     backgroundColor: Colors.grey,
     foregroundColor: Colors.white,
   );
+
+  static ButtonStyle refresh = ElevatedButton.styleFrom(
+    backgroundColor: Colors.indigo,
+    foregroundColor: Colors.white,
+  );
 }

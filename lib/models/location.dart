@@ -15,7 +15,7 @@ class Location {
       );
 
   Map<String, dynamic> toJson() => {
-        
+        'id': id,
         'section': section.toJson(),
         'number': number,
       };

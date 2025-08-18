@@ -19,6 +19,7 @@ class LocationRegisterScreen extends StatefulWidget {
 }
 
 class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
+  bool refresh = false;
   LocationSection? selectedSection;
   TextEditingController startNumberController = TextEditingController();
   TextEditingController endNumberController = TextEditingController();
@@ -113,7 +114,7 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
                   child: Row(
                     spacing: 20,
                     children: [
-                      GoBackButton(),
+                      GoBackButton(refresh: refresh),
                       ElevatedButton(
                         style: AppButtonStyle.newPage,
                         onPressed: () {
@@ -140,107 +141,94 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
                       children: [
                         SizedBox(width: 10),
                         Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing: 20,
+                          // crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Text("구역 :"),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 5.0,
-                                  ),
-                                  child: DropdownMenu<LocationSection>(
-                                    menuHeight: 400,
-                                    initialSelection: selectedSection,
-                                    onSelected: (section) {
-                                      setState(() {
-                                        selectedSection = section;
-                                      });
-                                    },
-                                    dropdownMenuEntries: sectionProvider
-                                        .sections
-                                        .map(
-                                          (section) =>
-                                              DropdownMenuEntry<
-                                                LocationSection
-                                              >(
-                                                value: section,
-                                                label: section.section!,
-                                              ),
-                                        )
-                                        .toList(),
-                                  ),
-                                ),
-                              ],
+                            DropdownMenu<LocationSection>(
+                              label: Text("구역"),
+                              menuHeight: 400,
+                              initialSelection: selectedSection,
+                              onSelected: (section) {
+                                setState(() {
+                                  selectedSection = section;
+                                });
+                              },
+                              dropdownMenuEntries: sectionProvider
+                                  .sections
+                                  .map(
+                                    (section) =>
+                                        DropdownMenuEntry<
+                                          LocationSection
+                                        >(
+                                          value: section,
+                                          label: section.section!,
+                                        ),
+                                  )
+                                  .toList(),
                             ),
-                            Row(
-                              children: [
-                                Text("번호 :"),
-                                SizedBox(width:10),
-                                SizedBox(
-                                  width: 50,
-                                  child: TextField(
-                                    controller: startNumberController,
-                                    textAlign: TextAlign.center,
-                                  ),
+                            SizedBox(
+                              width: 130,
+                              child: TextField(
+                                controller: startNumberController,
+                                decoration: InputDecoration(
+                                  labelText: "시작 번호",
+                                  border: OutlineInputBorder(),
                                 ),
-                                Text(" ~ "),
-                                SizedBox(
-                                  width: 50,
-                                  child: TextField(
-                                    controller: endNumberController,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(50,10,0,0),
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  if (selectedSection == null) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('구역을 선택해주세요.')),
-                                    );
-                                    return;
-                                  }
-                                  if (startNumberController.text.isEmpty ||
-                                      endNumberController.text.isEmpty) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('번호를 입력해주세요.')),
-                                    );
-                                    return;
-                                  }
-                                  if (int.tryParse(startNumberController.text) ==
-                                          null ||
-                                      int.tryParse(endNumberController.text) ==
-                                          null) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('숫자를 입력해주세요.')),
-                                    );
-                                    return;
-                                  }
-                                  if (int.parse(startNumberController.text) < 0 ||
-                                      int.parse(endNumberController.text) < 0) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('번호는 0 이상의 숫자를 입력해주세요.'),
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  addLocation(
-                                    selectedSection!,
-                                    startNumberController.text,
-                                    endNumberController.text,
-                                  );
-                                  startNumberController.clear();
-                                  endNumberController.clear();
-                                  setState(() {});
-                                },
-                                child: Icon(Icons.add, size: 30),
                               ),
+                            ),
+                            SizedBox(
+                              width: 130,
+                              child: TextField(
+                                controller: endNumberController,
+                                decoration: InputDecoration(
+                                  labelText: "종료 번호",
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                if (selectedSection == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('구역을 선택해주세요.')),
+                                  );
+                                  return;
+                                }
+                                if (startNumberController.text.isEmpty ||
+                                    endNumberController.text.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('번호를 입력해주세요.')),
+                                  );
+                                  return;
+                                }
+                                if (int.tryParse(startNumberController.text) ==
+                                        null ||
+                                    int.tryParse(endNumberController.text) ==
+                                        null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('숫자를 입력해주세요.')),
+                                  );
+                                  return;
+                                }
+                                if (int.parse(startNumberController.text) < 0 ||
+                                    int.parse(endNumberController.text) < 0) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('번호는 0 이상의 숫자를 입력해주세요.'),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                addLocation(
+                                  selectedSection!,
+                                  startNumberController.text,
+                                  endNumberController.text,
+                                );
+                                startNumberController.clear();
+                                endNumberController.clear();
+                                setState(() {});
+                              },
+                              child: Icon(Icons.add, size: 30),
                             ),
                           ],
                         ),
@@ -289,6 +277,7 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
                                 if (!mounted) return;
 
                                 if (count > 0) {
+                                  refresh = true;
                                   locations.clear();
                                   selectedLocations.clear();
                                   startNumberController.clear();

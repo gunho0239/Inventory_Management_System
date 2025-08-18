@@ -5,6 +5,7 @@ import 'package:inventory_management/main.dart';
 import 'package:inventory_management/models/part_unit.dart';
 import 'package:inventory_management/providers/unit_provider.dart';
 import 'package:inventory_management/repository/part_unit_repository.dart';
+import 'package:inventory_management/screens/unit_register_screen.dart';
 import 'package:inventory_management/widgets/buttons.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/title.dart';
@@ -70,7 +71,6 @@ class _UnitManagementScreenState extends State<UnitManagementScreen> {
                     spacing: 20,
                     children: [
                       GoBackButton(),
-                      RegisterPageButton(InventoryMenu.unitRegister,),
                       RefreshButton(
                         onPressed: () {
                           setState(() {
@@ -78,6 +78,7 @@ class _UnitManagementScreenState extends State<UnitManagementScreen> {
                           });
                         },
                       ),
+                      RegisterPageButton(InventoryMenu.unitRegister,),
                     ],
                   ),
                 ),
@@ -90,25 +91,21 @@ class _UnitManagementScreenState extends State<UnitManagementScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Text("단위 :"),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 5.0,
-                                horizontal: 10.0,
-                              ),
-                              child: DropdownMenu<PartUnit>(
-                                menuHeight: 400,
-                                initialSelection: selectedUnit,
-                                onSelected: (unit) {
-                                  selectedUnit = unit!;
-                                  setState(() {});
-                                },
-                                dropdownMenuEntries: unitProvider.unitsDropdownWithAll,
-                              ),
-                            ),
-                          ],
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 5.0,
+                            horizontal: 10.0,
+                          ),
+                          child: DropdownMenu<PartUnit>(
+                            label: Text("단위"),
+                            menuHeight: 400,
+                            initialSelection: selectedUnit,
+                            onSelected: (unit) {
+                              selectedUnit = unit!;
+                              setState(() {});
+                            },
+                            dropdownMenuEntries: unitProvider.unitsDropdownWithAll,
+                          ),
                         ),
                         SizedBox(
                           width: 500,
