@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:inventory_management/api/api_client.dart';
+import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/datatable_source/part_unit_data.dart';
 import 'package:inventory_management/main.dart';
 import 'package:inventory_management/models/part_unit.dart';
 import 'package:inventory_management/providers/unit_provider.dart';
 import 'package:inventory_management/repository/part_unit_repository.dart';
-import 'package:inventory_management/screens/unit_register_screen.dart';
 import 'package:inventory_management/widgets/buttons.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/title.dart';
@@ -140,12 +139,12 @@ class _UnitManagementScreenState extends State<UnitManagementScreen> {
                                     ConfirmDialog(message: "선택한 단위를 삭제하시겠습니까?"),
                               );
 
-                              if (!confirmed) return;
+                              if (confirmed == null || confirmed == false) return;
 
                               List<int> unitIds = selectedUnits
                                   .map((unit) => unit.id!)
                                   .toList();
-                              DeleteResult result = await PartUnitRepository()
+                              BulkRequestResult result = await PartUnitRepository()
                                   .removePartUnits(unitIds);
 
                               String message = "";

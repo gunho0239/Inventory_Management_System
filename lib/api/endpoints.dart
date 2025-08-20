@@ -6,5 +6,6 @@ class Endpoints {
   static const String partUnits = "part-units";
   static const String locations = "locations";
   static const String locationSections = "location-sections";
+  static const String persons = "persons";
   // ...
 }

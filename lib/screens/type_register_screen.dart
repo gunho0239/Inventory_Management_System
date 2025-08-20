@@ -141,6 +141,14 @@ class _TypeRegisterScreenState extends State<TypeRegisterScreen> {
                                   return;
                                 }
 
+                                final confirmed = await showDialog(
+                                  context: context,
+                                  builder: (context) =>
+                                      ConfirmDialog(message: "전체등록 하시겠습니까?"),
+                                );
+
+                                if (confirmed == null || confirmed == false) return;
+
                                 int count = await registerAllTypes();
 
                                 if (!mounted) return;

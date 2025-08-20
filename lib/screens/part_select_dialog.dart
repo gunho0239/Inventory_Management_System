@@ -94,118 +94,88 @@ class _PartSelectDialogState extends State<PartSelectDialog> {
 
     return AlertDialog(
       title: Text('부품 선택'),
-      content: Expanded(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10.0,
-            vertical: 10.0,
+      content: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 10,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 10,
+              children: [
+                DropdownMenu<PartType>(
+                  label: Text("품명"),
+                  enableFilter: true,
+                  menuHeight: 400,
+                  width: 180,
+                  onSelected: (type) {
+                    selectedType = type!;
+                    getParts();
+                    dataTableKey = UniqueKey();
+                  },
+                  dropdownMenuEntries:
+                      typeProvider.typesDropdownWithAll,
+                ),
+                DropdownMenu<PartMaker>(
+                  label: Text("제조사"),
+                  enableFilter: true,
+                  menuHeight: 400,
+                  width: 180,
+                  onSelected: (maker) {
+                    selectedMaker = maker!;
+                    getParts();
+                    dataTableKey = UniqueKey();
+                  },
+                  dropdownMenuEntries:
+                      makerProvider.makersDropdownWithAll,
+                ),
+                SizedBox(
+                  width: 180,
+                  child: TextField(
+                    controller: specFieldController,
+                    decoration: InputDecoration(
+                      labelText: "규격",
+                      hintText: "입력 후 엔터",
+                      border: OutlineInputBorder(),
+                    ),
+                    onSubmitted: (sectionName) {
+                      dataTableKey = UniqueKey();
+                      getParts();
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
-          child: Column(
-            children: [
-              Row(
-                spacing: 20,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5.0),
-                    child: DropdownMenu<PartType>(
-                      label: Text("품명"),
-                      enableFilter: true,
-                      menuHeight: 400,
-                      width: 150,
-                      // initialSelection: selectedType,
-                      onSelected: (type) {
-                        selectedType = type!;
-                        getParts();
-                        dataTableKey = UniqueKey();
-                      },
-                      dropdownMenuEntries:
-                          typeProvider.typesDropdownWithAll,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5.0),
-                    child: DropdownMenu<PartMaker>(
-                      label: Text("제조사"),
-                      enableFilter: true,
-                      menuHeight: 400,
-                      width: 150,
-                      // initialSelection: selectedType,
-                      onSelected: (maker) {
-                        selectedMaker = maker!;
-                        getParts();
-                        dataTableKey = UniqueKey();
-                      },
-                      dropdownMenuEntries:
-                          makerProvider.makersDropdownWithAll,
-                    ),
-                  ),
-                  SizedBox(
-                    width: 180,
-                    child: TextField(
-                      controller: specFieldController,
-                      decoration: InputDecoration(
-                        labelText: "규격",
-                        hintText: "입력 후 엔터",
-                        border: OutlineInputBorder(),
-                      ),
-                      onSubmitted: (sectionName) {
-                        dataTableKey = UniqueKey();
-                        getParts();
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: 700,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10.0,
-                        ),
-                        child: SingleChildScrollView(
-                          child: PaginatedDataTable(
-                            key: dataTableKey,
-                            columns: columns,
-                            source: _dataSource,
-                            rowsPerPage: 10,
-                            showCheckboxColumn: true,
-                            onSelectAll: (selected) {},
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+          Expanded(
+            child: SizedBox(
+              width: 700,
+              child: SingleChildScrollView(
+                child: PaginatedDataTable(
+                  key: dataTableKey,
+                  columns: columns,
+                  source: _dataSource,
+                  rowsPerPage: 10,
+                  showCheckboxColumn: true,
+                  onSelectAll: (selected) {},
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
       actions: [
         TextButton(
           onPressed: () async {
             if (selectedPart != null) {
-              // final quantity = await showDialog<int>(
-              //   context: context,
-              //   builder: (context) => NumberInputDialog(
-              //     title: '수량 입력',
-              //     hintText: '수량 입력',
-              //   ),
-              // );
-
-              // if (quantity != null) {
-                Stock newStock = Stock(
-                  part: selectedPart!,
-                  quantity: widget.stock?.quantity,
-                  location: widget.stock?.location,
-                );
-                Navigator.of(context).pop(newStock);
-              // }
-              
+              Stock newStock = Stock(
+                part: selectedPart!,
+                quantity: widget.stock?.quantity,
+                location: widget.stock?.location,
+              );
+              Navigator.of(context).pop(newStock);              
             }
             else {
               showDialog(

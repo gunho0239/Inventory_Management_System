@@ -94,10 +94,6 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
     final makerProvider = Provider.of<MakerProvider>(context, listen: false);
     final unitProvider = Provider.of<UnitProvider>(context, listen: false);
 
-    selectedType = typeProvider.allType;
-    selectedMaker = makerProvider.allMaker;
-    selectedUnit = unitProvider.allUnit;
-
     typeProvider.reloadTypes();
     makerProvider.reloadMakers();
     unitProvider.reloadUnits();
@@ -142,7 +138,6 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                     spacing: 20,
                     children: [
                       GoBackButton(refresh: refresh),
-                      // GoBackButton(),
                       ElevatedButton(
                         style: AppButtonStyle.newPage,
                         onPressed: () {
@@ -202,7 +197,7 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                               width: 180,
                               initialSelection: selectedType,
                               onSelected: (type) {
-                                selectedType = type!;
+                                selectedType = type;
                               },
                               dropdownMenuEntries: typeProvider.typesDropdown,
                             ),
@@ -213,7 +208,7 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                               width: 180,
                               initialSelection: selectedMaker,
                               onSelected: (maker) {
-                                selectedMaker = maker!;
+                                selectedMaker = maker;
                               },
                               dropdownMenuEntries: makerProvider.makersDropdown,
                             ),
@@ -224,7 +219,7 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                               width: 180,
                               initialSelection: selectedUnit,
                               onSelected: (unit) {
-                                selectedUnit = unit!;
+                                selectedUnit = unit;
                               },
                               dropdownMenuEntries: unitProvider.unitsDropdown,
                             ),
@@ -281,6 +276,14 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                                   );
                                   return;
                                 }
+
+                                final confirmed = await showDialog(
+                                  context: context,
+                                  builder: (context) =>
+                                      ConfirmDialog(message: "전체등록 하시겠습니까?"),
+                                );
+
+                                if (confirmed == null || confirmed == false) return;
 
                                 int count = await registerAllParts();
 

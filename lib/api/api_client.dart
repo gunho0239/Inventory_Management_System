@@ -15,17 +15,7 @@ class ApiClient {
     );
     return _processResponse(response);
   }
-
-  /// 응답 처리 공통 함수
-  static dynamic _processResponse(http.Response response) {
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      if (response.body.isEmpty) return null;
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('API Error: ${response.statusCode}, ${response.body}');
-    }
-  }
-
+  
 
   static Future<dynamic> post(String endpoint, dynamic body) async {
     final response = await http.post(
@@ -45,7 +35,7 @@ class ApiClient {
   }
 
 
-  static Future<DeleteResult> delete(String endpoint, dynamic body) async {
+  static Future<Map<String, dynamic>> delete(String endpoint, dynamic body) async {
     final response = await http.delete(
       Uri.parse(baseUrl + endpoint),
       headers: {
@@ -56,19 +46,31 @@ class ApiClient {
     );
     Map<String, dynamic> responseBody = jsonDecode(response.body);
 
-    return DeleteResult(successCount: responseBody["successCount"], failedCount: responseBody["failedCount"]);
+    return responseBody;
   }
 
+  static Future<dynamic> put(String endpoint, dynamic body) async {
+    final response = await http.put(
+      Uri.parse(baseUrl + endpoint),
+      headers: {
+        'Content-Type': 'application/json',
+        // 필요시 인증 헤더 등 추가
+      },
+      body: jsonEncode(body),
+    );
+    return _processResponse(response);
+  }
+
+
+  /// 응답 처리 공통 함수
+  static dynamic _processResponse(http.Response response) {
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.body.isEmpty) return null;
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('API Error: ${response.statusCode}, ${response.body}');
+    }
+  }
 }
 
-enum ResponseStatus {
-  success,
-  failure,
-}
 
-class DeleteResult {
-  int successCount;
-  int failedCount;
-
-  DeleteResult({required this.successCount, required this.failedCount});
-}

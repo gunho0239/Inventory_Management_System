@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:inventory_management/api/api_client.dart';
+import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/datatable_source/part_type_data.dart';
 import 'package:inventory_management/main.dart';
 import 'package:inventory_management/models/part_type.dart';
@@ -140,12 +140,12 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                                     ConfirmDialog(message: "선택한 품명을 삭제하시겠습니까?"),
                               );
 
-                              if (!confirmed) return;
+                              if (confirmed == null || confirmed == false) return;
 
                               List<int> typeIds = selectedTypes
                                   .map((type) => type.id!)
                                   .toList();
-                              DeleteResult result = await PartTypeRepository()
+                              BulkRequestResult result = await PartTypeRepository()
                                   .removePartTypes(typeIds);
 
                               String message = "";

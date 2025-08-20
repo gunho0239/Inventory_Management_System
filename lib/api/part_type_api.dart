@@ -1,4 +1,5 @@
 import 'package:inventory_management/api/api_client.dart';
+import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/api/endpoints.dart';
 import 'package:inventory_management/models/part_type.dart';
 
@@ -18,7 +19,8 @@ class PartTypeApi {
     return (registeredData as List).map((json) => PartType.fromJson(json)).toList();
   }
 
-  Future<DeleteResult> deletePartTypes(List<int> typeIds) async {
-    return await ApiClient.delete('${Endpoints.partTypes}/bulk', typeIds);
+  Future<BulkRequestResult> deletePartTypes(List<int> typeIds) async {
+    final responseBody = await ApiClient.delete('${Endpoints.partTypes}/bulk', typeIds);
+    return BulkRequestResult(successCount: responseBody["successCount"], failedCount: responseBody["failedCount"]);
   }
 }

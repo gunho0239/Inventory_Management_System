@@ -1,4 +1,5 @@
 import 'package:inventory_management/api/api_client.dart';
+import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/api/endpoints.dart';
 import 'package:inventory_management/models/stock.dart';
 
@@ -37,16 +38,6 @@ class StockApi {
     return (data as List).map((json) => Stock.fromJson(json)).toList();
   }
 
-  // Future<List<Stock>> fetchStocksBySpecification(String spec) async {
-  //   final data = await ApiClient.get('${Endpoints.stocks}/search?specification=$spec');
-  //   return (data as List).map((json) => Stock.fromJson(json)).toList();
-  // }
-
-  // Future<List<Stock>> fetchStocksByTypeAndSpecification(int typeId, String spec) async {
-  //   final data = await ApiClient.get('${Endpoints.stocks}/search/combined?typeId=$typeId&specification=$spec');
-  //   return (data as List).map((json) => Stock.fromJson(json)).toList();
-  // }
-
   Future<Stock> createStock(Stock stock) async {
     final registeredData = await ApiClient.post('${Endpoints.stocks}/single', stock.toJson());
     return Stock.fromJson(registeredData);
@@ -57,12 +48,18 @@ class StockApi {
     return (registeredData as List).map((json) => Stock.fromJson(json)).toList();
   }
 
-  Future<void> deleteStock(int stockId) async {
-    await ApiClient.delete('${Endpoints.stocks}/$stockId', null);
+  Future<SingleRequestResult> deleteStock(Stock stock) async {
+    dynamic responseBody = await ApiClient.delete('${Endpoints.stocks}/single', stock.toJson());
+    return SingleRequestResult(success: responseBody["success"], errorMessage: responseBody["message"]);
   }
 
-  Future<DeleteResult> deleteStocks(List<int> stockIds) async {
-    return await ApiClient.delete('${Endpoints.stocks}/bulk', stockIds);
+  Future<SingleRequestResult> updateStockQuantity(Stock stock) async {
+    dynamic responseBody = await ApiClient.put('${Endpoints.stocks}/quantity', stock.toJson());
+    return SingleRequestResult(success: responseBody["success"], errorMessage: responseBody["message"]);
   }
 
+  Future<SingleRequestResult> updateStockLocation(Stock stock) async {
+    dynamic responseBody = await ApiClient.put('${Endpoints.stocks}/location', stock.toJson());
+    return SingleRequestResult(success: responseBody["success"], errorMessage: responseBody["message"]);
+  }
 }

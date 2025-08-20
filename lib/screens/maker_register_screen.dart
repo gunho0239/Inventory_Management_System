@@ -141,6 +141,14 @@ class _MakerRegisterScreenState extends State<MakerRegisterScreen> {
                                   return;
                                 }
 
+                                final confirmed = await showDialog(
+                                  context: context,
+                                  builder: (context) =>
+                                      ConfirmDialog(message: "전체등록 하시겠습니까?"),
+                                );
+
+                                if (confirmed == null || confirmed == false) return;
+
                                 int count = await registerAllMakers();
 
                                 if (!mounted) return;

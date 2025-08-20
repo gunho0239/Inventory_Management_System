@@ -1,4 +1,5 @@
 import 'package:inventory_management/api/api_client.dart';
+import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/api/endpoints.dart';
 import 'package:inventory_management/models/location_section.dart';
 
@@ -18,7 +19,8 @@ class LocationSectionApi {
     return (registeredData as List).map((json) => LocationSection.fromJson(json)).toList();
   }
 
-  Future<DeleteResult> deleteLocationSections(List<int> sectionIds) async {
-    return await ApiClient.delete('${Endpoints.locationSections}/bulk', sectionIds);
+  Future<BulkRequestResult> deleteLocationSections(List<int> sectionIds) async {
+    final responseBody = await ApiClient.delete('${Endpoints.locationSections}/bulk', sectionIds);
+    return BulkRequestResult(successCount: responseBody["successCount"], failedCount: responseBody["failedCount"]);
   }
 }

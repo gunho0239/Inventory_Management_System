@@ -1,4 +1,5 @@
 import 'package:inventory_management/api/api_client.dart';
+import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/api/endpoints.dart';
 import 'package:inventory_management/models/part_maker.dart';
 
@@ -18,7 +19,8 @@ class PartMakerApi {
     return (registeredData as List).map((json) => PartMaker.fromJson(json)).toList();
   }
 
-  Future<DeleteResult> deletePartMakers(List<int> makerIds) async {
-    return await ApiClient.delete('${Endpoints.partMakers}/bulk', makerIds);
+  Future<BulkRequestResult> deletePartMakers(List<int> makerIds) async {
+    final responseBody = await ApiClient.delete('${Endpoints.partMakers}/bulk', makerIds);
+    return BulkRequestResult(successCount: responseBody["successCount"], failedCount: responseBody["failedCount"]);
   }
 }

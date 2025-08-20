@@ -73,64 +73,40 @@ class _LocationSelectDialogState extends State<LocationSelectDialog> {
     );
 
     return AlertDialog(
-      title: Text('부품 선택'),
-      content: Expanded(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20.0,
-            vertical: 20.0,
+      title: Text('위치 선택'),
+      content: Row(
+        spacing: 10,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10.0),
+            child: DropdownMenu<LocationSection>(
+              label: Text("구역"),
+              enableFilter: true,
+              menuHeight: 400,
+              onSelected: (section) {
+                selectedSection = section!;
+                getLocations();
+                dataTableKey = UniqueKey();
+              },
+              dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
+            ),
           ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 5.0,
-                      horizontal: 10.0,
-                    ),
-                    child: DropdownMenu<LocationSection>(
-                      label: Text("구역"),
-                      enableFilter: true,
-                      menuHeight: 400,
-                      // initialSelection: selectedSection,
-                      onSelected: (section) {
-                        selectedSection = section!;
-                        getLocations();
-                        dataTableKey = UniqueKey();
-                      },
-                      dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
-                    ),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: 500,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10.0,
-                        ),
-                        child: SingleChildScrollView(
-                          child: PaginatedDataTable(
-                            key: dataTableKey,
-                            columns: columns,
-                            source: _dataSource,
-                            rowsPerPage: 10,
-                            showCheckboxColumn: true,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+          Expanded(
+            child: SizedBox(
+              width: 500,
+              child: SingleChildScrollView(
+                child: PaginatedDataTable(
+                  key: dataTableKey,
+                  columns: columns,
+                  source: _dataSource,
+                  rowsPerPage: 10,
+                  showCheckboxColumn: true,
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
       actions: [
         TextButton(

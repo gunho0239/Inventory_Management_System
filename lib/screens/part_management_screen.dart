@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:inventory_management/api/api_client.dart';
+import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/datatable_source/part_data.dart';
 import 'package:inventory_management/main.dart';
 import 'package:inventory_management/models/part.dart';
@@ -93,163 +93,160 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
       },
     );
 
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ScreenTitle(menu: InventoryMenu.partManagement),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20.0,
-                vertical: 20.0,
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    spacing: 20,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                        child: DropdownMenu<PartType>(
-                          label: Text("품명"),
-                          enableFilter: true,
-                          menuHeight: 400,
-                          width: 150,
-                          // initialSelection: selectedType,
-                          onSelected: (type) {
-                            selectedType = type!;
-                            getParts();
-                            dataTableKey = UniqueKey();
-                          },
-                          dropdownMenuEntries:
-                              typeProvider.typesDropdownWithAll,
-                        ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ScreenTitle(menu: InventoryMenu.partManagement),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20.0,
+              vertical: 20.0,
+            ),
+            child: Column(
+              children: [
+                Row(
+                  spacing: 20,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: DropdownMenu<PartType>(
+                        label: Text("품명"),
+                        enableFilter: true,
+                        menuHeight: 400,
+                        width: 150,
+                        onSelected: (type) {
+                          selectedType = type!;
+                          getParts();
+                          dataTableKey = UniqueKey();
+                        },
+                        dropdownMenuEntries:
+                            typeProvider.typesDropdownWithAll,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                        child: DropdownMenu<PartMaker>(
-                          label: Text("제조사"),
-                          enableFilter: true,
-                          menuHeight: 400,
-                          width: 150,
-                          // initialSelection: selectedType,
-                          onSelected: (maker) {
-                            selectedMaker = maker!;
-                            getParts();
-                            dataTableKey = UniqueKey();
-                          },
-                          dropdownMenuEntries:
-                              makerProvider.makersDropdownWithAll,
-                        ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: DropdownMenu<PartMaker>(
+                        label: Text("제조사"),
+                        enableFilter: true,
+                        menuHeight: 400,
+                        width: 150,
+                        onSelected: (maker) {
+                          selectedMaker = maker!;
+                          getParts();
+                          dataTableKey = UniqueKey();
+                        },
+                        dropdownMenuEntries:
+                            makerProvider.makersDropdownWithAll,
                       ),
-                      SizedBox(
-                        width: 180,
-                        child: TextField(
-                          controller: specFieldController,
-                          decoration: InputDecoration(
-                            labelText: "규격",
-                            hintText: "입력 후 엔터",
-                            border: OutlineInputBorder(),
+                    ),
+                    SizedBox(
+                      width: 180,
+                      child: TextField(
+                        controller: specFieldController,
+                        decoration: InputDecoration(
+                          labelText: "규격",
+                          hintText: "입력 후 엔터",
+                          border: OutlineInputBorder(),
+                        ),
+                        onSubmitted: (sectionName) {
+                          dataTableKey = UniqueKey();
+                          getParts();
+                        },
+                      ),
+                    ),
+                    RegisterPageButton(InventoryMenu.partRegister,
+                      onPressed: () async {
+                        final refresh = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PartRegisterScreen(),
                           ),
-                          onSubmitted: (sectionName) {
-                            dataTableKey = UniqueKey();
-                            getParts();
-                          },
+                        );
+    
+                        if (refresh == true) {
+                          getParts();
+                          dataTableKey = UniqueKey();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 700,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10.0,
+                          ),
+                          child: SingleChildScrollView(
+                            child: PaginatedDataTable(
+                              key: dataTableKey,
+                              columns: columns,
+                              source: _dataSource,
+                              rowsPerPage: 10,
+                              showCheckboxColumn: true,
+                            ),
+                          ),
                         ),
                       ),
-                      RegisterPageButton(InventoryMenu.partRegister,
+                      DeleteButton(
                         onPressed: () async {
-                          final refresh = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PartRegisterScreen(),
+                          if (selectedParts.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('삭제할 부품을 선택해주세요.')),
+                            );
+                            return;
+                          }
+                          final confirmed = await showDialog(
+                            context: context,
+                            builder: (context) => ConfirmDialog(
+                              message: "선택한 부품을 삭제하시겠습니까?",
                             ),
                           );
-
-                          if (refresh == true) {
-                            getParts();
+    
+                          if (confirmed == null || confirmed == false) return;
+                          
+                          List<int> partIds = selectedParts
+                              .map((part) => part.id!)
+                              .toList();
+                          BulkRequestResult result = await PartRepository()
+                              .removeParts(partIds);
+    
+                          String message = "";
+                          if (result.successCount > 0) {
                             dataTableKey = UniqueKey();
+                            message =
+                                "${result.successCount}개의 부품을 삭제하였습니다.\n";
                           }
+                          if (result.failedCount > 0) {
+                            message =
+                                "${result.successCount}개 삭제 완료\n${result.failedCount}개 삭제 실패!";
+                          }
+    
+                          if (!mounted) return;
+                          showDialog(
+                            context: context,
+                            builder: (context) => ResultDialog(
+                              message: message,
+                            ),
+                          );
+    
+                          selectedParts.clear();
+                          getParts();
                         },
                       ),
                     ],
                   ),
-                  Expanded(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 700,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10.0,
-                            ),
-                            child: SingleChildScrollView(
-                              child: PaginatedDataTable(
-                                key: dataTableKey,
-                                columns: columns,
-                                source: _dataSource,
-                                rowsPerPage: 10,
-                                showCheckboxColumn: true,
-                              ),
-                            ),
-                          ),
-                        ),
-                        DeleteButton(
-                          onPressed: () async {
-                            if (selectedParts.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('삭제할 부품을 선택해주세요.')),
-                              );
-                              return;
-                            }
-                            final confirmed = await showDialog(
-                              context: context,
-                              builder: (context) => ConfirmDialog(
-                                message: "선택한 부품을 삭제하시겠습니까?",
-                              ),
-                            );
-
-                            if (!confirmed) return;
-                            List<int> partIds = selectedParts
-                                .map((part) => part.id!)
-                                .toList();
-                            DeleteResult result = await PartRepository()
-                                .removeParts(partIds);
-
-                            String message = "";
-                            if (result.successCount > 0) {
-                              dataTableKey = UniqueKey();
-                              message =
-                                  "${result.successCount}개의 부품을 삭제하였습니다.\n";
-                            }
-                            if (result.failedCount > 0) {
-                              message =
-                                  "${result.successCount}개 삭제 완료\n${result.failedCount}개 삭제 실패!";
-                            }
-
-                            if (!mounted) return;
-                            showDialog(
-                              context: context,
-                              builder: (context) => ResultDialog(
-                                message: message,
-                              ),
-                            );
-
-                            selectedParts.clear();
-                            getParts();
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

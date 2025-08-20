@@ -1,4 +1,5 @@
 import 'package:inventory_management/api/api_client.dart';
+import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/api/endpoints.dart';
 import 'package:inventory_management/models/part.dart';
 
@@ -30,30 +31,6 @@ class PartApi {
     return (data as List).map((json) => Part.fromJson(json)).toList();
   }
 
-  // Future<List<Part>> fetchPartsBySpecification(String spec) async {
-  //   final data = await ApiClient.get('${Endpoints.parts}/search?specification=$spec');
-  //   return (data as List).map((json) => Part.fromJson(json)).toList();
-  // }
-
-  // Future<List<Part>> fetchPartsByTypeAndMaker(int typeId, int makerId) async {
-  //   final data = await ApiClient.get('${Endpoints.parts}/search/combined?typeId=$typeId&makerId=$makerId');
-  //   return (data as List).map((json) => Part.fromJson(json)).toList();
-  // }
-
-  // Future<List<Part>> fetchPartsByTypeAndSpecification(int typeId, String spec) async {
-  //   final data = await ApiClient.get('${Endpoints.parts}/search/combined?typeId=$typeId&specification=$spec');
-  //   return (data as List).map((json) => Part.fromJson(json)).toList();
-  // }
-
-  // Future<List<Part>> fetchPartsByMakerAndSpecification(int makerId, String spec) async {
-  //   final data = await ApiClient.get('${Endpoints.parts}/search/combined?makerId=$makerId&specification=$spec');
-  //   return (data as List).map((json) => Part.fromJson(json)).toList();
-  // }
-
-  // Future<List<Part>> fetchPartsByTypeAndMakerAndSpecification(int typeId, int makerId, String spec) async {
-  //   final data = await ApiClient.get('${Endpoints.parts}/search/combined?typeId=$typeId&makerId=$makerId&specification=$spec');
-  //   return (data as List).map((json) => Part.fromJson(json)).toList();
-  // }
 
   Future<Part> createPart(Part part) async {
     final registeredData = await ApiClient.post('${Endpoints.parts}/single', part.toJson());
@@ -69,8 +46,9 @@ class PartApi {
     await ApiClient.delete('${Endpoints.parts}/$partId', null);
   }
 
-  Future<DeleteResult> deleteParts(List<int> partIds) async {
-    return await ApiClient.delete('${Endpoints.parts}/bulk', partIds);
+  Future<BulkRequestResult> deleteParts(List<int> partIds) async {
+    final responseBody = await ApiClient.delete('${Endpoints.parts}/bulk', partIds);
+    return BulkRequestResult(successCount: responseBody["successCount"], failedCount: responseBody["failedCount"]);
   }
 
 }

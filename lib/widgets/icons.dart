@@ -11,4 +11,8 @@ class MenuIcons {
   static const IconData location = Icons.location_on;
   static const IconData section = Icons.shelves;
   static const IconData history = Icons.history;
+
+  static const IconData release = Icons.logout;
+  static const IconData quantityChange = Icons.exposure_plus_1;
+  static const IconData locationChange = Icons.edit_location_outlined;
 }

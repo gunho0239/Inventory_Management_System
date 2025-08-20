@@ -1,4 +1,5 @@
 import 'package:inventory_management/api/api_client.dart';
+import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/api/endpoints.dart';
 import 'package:inventory_management/models/location.dart';
 
@@ -28,8 +29,9 @@ class LocationApi {
     await ApiClient.delete('${Endpoints.locations}/$locationId', null);
   }
 
-  Future<DeleteResult> deleteLocations(List<int> locationIds) async {
-    return await ApiClient.delete('${Endpoints.locations}/bulk', locationIds);
+  Future<BulkRequestResult> deleteLocations(List<int> locationIds) async {
+    final responseBody = await ApiClient.delete('${Endpoints.locations}/bulk', locationIds);
+    return BulkRequestResult(successCount: responseBody["successCount"], failedCount: responseBody["failedCount"]);
   }
 
 }

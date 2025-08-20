@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:inventory_management/api/api_client.dart';
+import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/datatable_source/location_section_data.dart';
 import 'package:inventory_management/main.dart';
 import 'package:inventory_management/models/location_section.dart';
 import 'package:inventory_management/providers/section_provider.dart';
 import 'package:inventory_management/repository/location_section_repository.dart';
-import 'package:inventory_management/screens/section_register_screen.dart';
-import 'package:inventory_management/style/style.dart';
 import 'package:inventory_management/widgets/buttons.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/title.dart';
@@ -142,12 +140,12 @@ class _SectionManagementScreenState extends State<SectionManagementScreen> {
                                     ConfirmDialog(message: "선택한 구역을 삭제하시겠습니까?"),
                               );
 
-                              if (!confirmed) return;
+                              if (confirmed == null || confirmed == false) return;
 
                               List<int> sectionIds = selectedSections
                                   .map((sec) => sec.id!)
                                   .toList();
-                              DeleteResult result =
+                              BulkRequestResult result =
                                   await LocationSectionRepository()
                                       .removeLocationSections(sectionIds);
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventory_management/constants/menu_name.dart';
 import 'package:inventory_management/main.dart';
 import 'package:inventory_management/screens/location_register_screen.dart';
 import 'package:inventory_management/screens/maker_register_screen.dart';
@@ -7,6 +8,7 @@ import 'package:inventory_management/screens/section_register_screen.dart';
 import 'package:inventory_management/screens/type_register_screen.dart';
 import 'package:inventory_management/screens/unit_register_screen.dart';
 import 'package:inventory_management/style/style.dart';
+import 'package:inventory_management/widgets/icons.dart';
 
 class GoBackButton extends StatelessWidget {
   final bool refresh;
@@ -34,10 +36,6 @@ class RegisterPageButton extends StatelessWidget {
 
   RegisterPageButton(InventoryMenu menu, {super.key, this.onPressed}) {
     switch (menu) {
-      case InventoryMenu.stockRegister:
-        menuName = '재고';
-        // registerScreen = const StockRegisterScreen();
-        break;
       case InventoryMenu.partRegister:
         menuName = '부품';
         registerScreen = const PartRegisterScreen();
@@ -143,6 +141,20 @@ class DeleteButton extends StatelessWidget {
   }
 }
 
+class EditButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const EditButton({super.key, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onPressed,
+      icon: Icon(Icons.edit, size: 30),
+    );
+  }
+}
+
 class ReleaseButton extends StatelessWidget {
   final VoidCallback onPressed;
 
@@ -156,8 +168,8 @@ class ReleaseButton extends StatelessWidget {
       child: Row(
         spacing: 5,
         children: [
-          Icon(Icons.logout, size: 30),
-          Text('출고(사용)', style: TextStyle(fontSize: 18)),
+          Icon(MenuIcons.release, size: 30),
+          Text(release, style: TextStyle(fontSize: 18)),
         ],
       ),
     );
@@ -177,8 +189,8 @@ class QuantityChangeButton extends StatelessWidget {
       child: Row(
         spacing: 5,
         children: [
-          Icon(Icons.exposure_plus_1, size: 30),
-          Text('수량변경', style: TextStyle(fontSize: 18)),
+          Icon(MenuIcons.quantityChange, size: 30),
+          Text(quantityChange, style: TextStyle(fontSize: 18)),
         ],
       ),
     );
@@ -198,8 +210,8 @@ class LocationChangeButton extends StatelessWidget {
       child: Row(
         spacing: 5,
         children: [
-          Icon(Icons.edit_location_outlined, size: 30),
-          Text('위치변경', style: TextStyle(fontSize: 18)),
+          Icon(MenuIcons.locationChange, size: 30),
+          Text(locationChange, style: TextStyle(fontSize: 18)),
         ],
       ),
     );
