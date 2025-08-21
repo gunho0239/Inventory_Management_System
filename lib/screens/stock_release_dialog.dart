@@ -4,8 +4,13 @@ import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/constants/columns.dart';
 import 'package:inventory_management/constants/menu_name.dart';
 import 'package:inventory_management/models/stock.dart';
+import 'package:inventory_management/models/stock_history.dart';
+import 'package:inventory_management/models/stock_history_category.dart';
+import 'package:inventory_management/providers/category_provider.dart';
 import 'package:inventory_management/providers/person_provider.dart';
 import 'package:inventory_management/repository/stock_repository.dart';
+import 'package:inventory_management/repository/stock_history_repository.dart';
+import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/icons.dart';
 import 'package:provider/provider.dart';
 
@@ -34,28 +39,58 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
   ];
   late final List<DataRow> stockRow;
 
-  updateStock() async {
-    final stockRepo = StockRepository();
-    late final SingleRequestResult result;
 
-    if (releaseQuantity == widget.selectedStock.quantity?.toDouble()) {
-      result = await stockRepo.removeStock(widget.selectedStock);
+  Future<SingleRequestResult> updateStock() async {
+    final stockRepo = StockRepository();
+    final stock = widget.selectedStock;
+    late final SingleRequestResult result;
+    final releaseQuantity = this.releaseQuantity.toInt();
+    final totalQuantity = stock.quantity ?? 0;
+
+    if (releaseQuantity == totalQuantity) {
+      result = await stockRepo.removeStock(stock);
     }
     else {
       final modifiedStock = Stock(
-        id: widget.selectedStock.id,
-        part: widget.selectedStock.part,
-        location: widget.selectedStock.location,
-        quantity: releaseQuantity.toInt(),
+        id: stock.id,
+        part: stock.part,
+        location: stock.location,
+        quantity: totalQuantity - releaseQuantity,
+        version: stock.version,
       );
 
       result = await stockRepo.updateStockQuantity(modifiedStock);
     }
 
-    if (result.success) {
-      
-    }
+    return result;
   }
+
+  Future<void> createStockHistory() async {
+    final stockHistoryRepo = StockHistoryRepository();
+    final stock = widget.selectedStock;
+
+    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+    final personProvider = Provider.of<PersonProvider>(context, listen: false);
+    final beforeQuantity = stock.quantity ?? 0;
+    final stockLocation = '${stock.location?.section.section ?? ""} ${stock.location?.number ?? ""}';
+
+    final stockHistory = StockHistory(
+      category: categoryProvider.getCategory(StockHistoryCategoryType.release),
+      note: memoFieldController.text.trim(),
+      type: stock.part?.type.type ?? "",
+      specification: stock.part?.specification ?? "",
+      maker: stock.part?.maker.maker ?? "",
+      unit: stock.part?.unit.unit ?? "",
+      beforeQuantity: beforeQuantity,
+      afterQuantity: beforeQuantity - releaseQuantity.toInt(),
+      beforeLocation: stockLocation,
+      afterLocation: stockLocation,
+      person: personProvider.currentUser?.name ?? "",
+    );
+
+    stockHistoryRepo.addHistory(stockHistory);
+  }
+
 
   @override
   void initState() {
@@ -145,17 +180,40 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () {
-            final value = memoFieldController.text.trim();
-            if (value != "") {
-              Navigator.of(context).pop(int.parse(value));
+          onPressed: () async {
+            final proceed = await showDialog(
+              context: context,
+              builder:(context) => ConfirmDialog(message: '출고(사용) 처리 하시겠습니까?'),
+            );
+
+            if (!context.mounted) return;
+            
+            if (proceed) {
+              final requestResult = await updateStock();
+              if (!context.mounted) return;
+
+              if (requestResult.isSuccess) {
+                createStockHistory();
+                await showDialog(
+                  context: context,
+                  builder: (context) => ResultDialog(message: '정상적으로 처리되었습니다.')
+                );
+              } else {
+                await showDialog(
+                  context: context,
+                  builder: (context) => ErrorDialog(message: requestResult.errorMessage ?? "출고(사용) 처리에 실패하였습니다. 새로고침 후 다시 시도해 주세요.")
+                );
+              }
+
+              // updateStock() 을 수행했으면 재고조회화면 새로고침
+              Navigator.of(context).pop(true);
             }
           },
           child: Text('확인'),
         ),
         TextButton(
           onPressed: () {
-            Navigator.of(context).pop();
+            Navigator.of(context).pop(false);
           },
           child: Text('취소'),
         ),

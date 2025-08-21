@@ -51,19 +51,6 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
     }
   }
 
-  List<DropdownMenuItem<LocationSection>> sectionDropdownItems(
-    List<LocationSection> sections,
-  ) {
-    return sections
-        .map(
-          (section) => DropdownMenuItem<LocationSection>(
-            value: section,
-            child: Text(section.section!),
-          ),
-        )
-        .toList();
-  }
-
   Future<int> registerAllLocations() async {
     if (locations.isEmpty) return 0;
 
@@ -283,7 +270,7 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
 
                                 int count = await registerAllLocations();
 
-                                if (!mounted) return;
+                                if (!context.mounted) return;
 
                                 if (count > 0) {
                                   refresh = true;

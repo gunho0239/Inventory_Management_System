@@ -7,5 +7,6 @@ class Endpoints {
   static const String locations = "locations";
   static const String locationSections = "location-sections";
   static const String persons = "persons";
-  // ...
+  static const String stockHistories = "stock-histories";
+  static const String stockHistoryCategories = "stock-history-categories";
 }

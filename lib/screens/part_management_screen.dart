@@ -227,7 +227,7 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
                                 "${result.successCount}개 삭제 완료\n${result.failedCount}개 삭제 실패!";
                           }
     
-                          if (!mounted) return;
+                          if (!context.mounted) return;
                           showDialog(
                             context: context,
                             builder: (context) => ResultDialog(

@@ -6,8 +6,9 @@ class Stock {
   final Part? part;
   final int? quantity;
   final Location? location;
+  final int? version;
 
-  Stock({this.id, this.part, this.quantity, this.location});
+  Stock({this.id, this.part, this.quantity, this.location, this.version});
 
   factory Stock.fromJson(Map<String, dynamic> json) =>
       Stock(
@@ -15,12 +16,15 @@ class Stock {
         part: Part.fromJson(json['part']),
         quantity: json['quantity'],
         location: Location.fromJson(json['location']),
+        version: json['version'],
       );
 
   Map<String, dynamic> toJson() => {
+        'id': id,
         'part': part?.toJson(),
         'quantity': quantity,
         'location': location?.toJson(),
+        'version': version,
       };
 
   @override
@@ -31,8 +35,9 @@ class Stock {
           id == other.id &&
           part == other.part &&
           quantity == other.quantity &&
-          location == other.location;
+          location == other.location &&
+          version == other.version;
 
   @override
-  int get hashCode => id.hashCode ^ part.hashCode ^ quantity.hashCode ^ location.hashCode;
+  int get hashCode => id.hashCode ^ part.hashCode ^ quantity.hashCode ^ location.hashCode ^ version.hashCode;
 }

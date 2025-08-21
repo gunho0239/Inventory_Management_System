@@ -272,7 +272,7 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
                                   );
                                 }
                                 else {
-                                  showDialog(
+                                  final refresh = await showDialog(
                                     context: context,
                                     builder: (context) {
                                       return ReleaseDialog(
@@ -280,6 +280,11 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
                                       );
                                     },
                                   );
+
+                                  if (refresh) {
+                                    dataTableKey = UniqueKey();
+                                    getStocks();
+                                  }
                                 }
                               },
                             ),

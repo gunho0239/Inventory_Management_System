@@ -151,7 +151,7 @@ class _MakerRegisterScreenState extends State<MakerRegisterScreen> {
 
                                 int count = await registerAllMakers();
 
-                                if (!mounted) return;
+                                if (!context.mounted) return;
 
                                 if (count > 0) {
                                   makers.clear();

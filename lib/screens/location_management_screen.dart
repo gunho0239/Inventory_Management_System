@@ -38,7 +38,6 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
     final sectionProvider = Provider.of<SectionProvider>(context, listen: false);
     selectedSection = sectionProvider.allSection;
     sectionProvider.reloadSections();
-    // getLocations();
   }
 
   void getLocations() async {
@@ -97,7 +96,6 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
                         label: Text("구역"),
                         enableFilter: true,
                         menuHeight: 400,
-                        // initialSelection: selectedSection,
                         onSelected: (section) {
                           selectedSection = section!;
                           getLocations();
@@ -179,7 +177,7 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
                                 "${result.successCount}개 삭제 완료\n${result.failedCount}개 삭제 실패!\n해당 위치의 재고를 먼저 이동시켜주세요.";
                           }
     
-                          if (!mounted) return;
+                          if (!context.mounted) return;
                           showDialog(
                             context: context,
                             builder: (context) => ResultDialog(

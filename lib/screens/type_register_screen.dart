@@ -151,7 +151,7 @@ class _TypeRegisterScreenState extends State<TypeRegisterScreen> {
 
                                 int count = await registerAllTypes();
 
-                                if (!mounted) return;
+                                if (!context.mounted) return;
 
                                 if (count > 0) {
                                   types.clear();

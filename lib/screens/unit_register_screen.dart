@@ -151,7 +151,7 @@ class _UnitRegisterScreenState extends State<UnitRegisterScreen> {
 
                                 int count = await registerAllUnits();
 
-                                if (!mounted) return;
+                                if (!context.mounted) return;
 
                                 if (count > 0) {
                                   units.clear();

@@ -8,10 +8,14 @@ import 'package:inventory_management/models/part_type.dart';
 import 'package:inventory_management/models/part_unit.dart';
 import 'package:inventory_management/models/person.dart';
 import 'package:inventory_management/models/stock.dart';
+import 'package:inventory_management/models/stock_history.dart';
+import 'package:inventory_management/models/stock_history_category.dart';
+import 'package:inventory_management/providers/category_provider.dart';
 import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/providers/person_provider.dart';
 import 'package:inventory_management/providers/type_provider.dart';
 import 'package:inventory_management/providers/unit_provider.dart';
+import 'package:inventory_management/repository/stock_history_repository.dart';
 import 'package:inventory_management/repository/stock_repository.dart';
 import 'package:inventory_management/screens/location_select_dialog.dart';
 import 'package:inventory_management/screens/part_select_dialog.dart';
@@ -65,15 +69,43 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
     }
   }
 
-  Future<int> registerAllStocks() async {
-    if (stocks.isEmpty) return 0;
+  Future<List<Stock>?> registerAllStocks() async {
+    if (stocks.isEmpty) return null;
 
     List<Stock> stockList = stocks.toList();
 
     List<Stock> registeredStocks = await StockRepository()
         .addStocks(stockList);
 
-    return registeredStocks.length;
+    return registeredStocks;
+  }
+
+  Future<void> createStockHistories(List<Stock> registeredStocks) async {
+    final stockHistoryRepo = StockHistoryRepository();
+
+    final currentUser = Provider.of<PersonProvider>(context, listen: false).currentUser;
+    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+    final category = categoryProvider.getCategory(StockHistoryCategoryType.register);
+    
+    final stockHistories = registeredStocks.map((stock) {
+      final stockLocation = '${stock.location?.section.section ?? ""} ${stock.location?.number ?? ""}';
+
+      return StockHistory(
+        category: category,
+        note: "",
+        type: stock.part?.type.type ?? "",
+        specification: stock.part?.specification ?? "",
+        maker: stock.part?.maker.maker ?? "",
+        unit: stock.part?.unit.unit ?? "",
+        beforeQuantity: 0,
+        afterQuantity: stock.quantity ?? 0,
+        beforeLocation: "",
+        afterLocation: stockLocation,
+        person: currentUser?.name ?? "",
+      );
+    }).toList();
+
+    stockHistoryRepo.addHistories(stockHistories);
   }
 
   void updateStockRows() {
@@ -304,31 +336,35 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                                     ConfirmDialog(message: "전체등록 하시겠습니까?"),
                               );
 
-                              if (confirmed == null || confirmed == false) return;
+                              if (confirmed) {
+                                final registeredStocks = await registerAllStocks();
 
-                              int count = await registerAllStocks();
+                                if (!context.mounted) return;
 
-                              if (!mounted) return;
+                                if (registeredStocks != null && registeredStocks.isNotEmpty) {
 
-                              if (count > 0) {
-                                setState(() {
-                                  stocks.clear();
-                                  dataTableKey = UniqueKey();
-                                  refresh = true;
-                                });
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => ResultDialog(
-                                    message: '$count개의 재고가 등록되었습니다.',
-                                  ),
-                                );
-                              } else {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) =>
-                                      ErrorDialog(message: '이미 등록된 재고입니다.'),
-                                );
-                                return;
+                                  createStockHistories(registeredStocks);
+
+                                  setState(() {
+                                    stocks.clear();
+                                    dataTableKey = UniqueKey();
+                                    refresh = true;
+                                  });
+
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => ResultDialog(
+                                      message: '${registeredStocks.length}개의 재고가 등록되었습니다.',
+                                    ),
+                                  );
+                                } 
+                                else {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) =>
+                                        ErrorDialog(message: '이미 등록된 재고입니다.'),
+                                  );
+                                }
                               }
                             },
                           ),

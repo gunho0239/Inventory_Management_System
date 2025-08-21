@@ -161,7 +161,7 @@ class _SectionManagementScreenState extends State<SectionManagementScreen> {
                                     "${result.successCount}개 삭제 완료\n${result.failedCount}개 삭제 실패!\n해당 구역의 위치를 먼저 삭제해주세요.";
                               }
 
-                              if (!mounted) return;
+                              if (!context.mounted) return;
                               showDialog(
                                 context: context,
                                 builder: (context) =>

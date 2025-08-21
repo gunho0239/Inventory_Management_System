@@ -151,7 +151,7 @@ class _SectionRegisterScreenState extends State<SectionRegisterScreen> {
 
                                 int count = await registerAllSections();
 
-                                if (!mounted) return;
+                                if (!context.mounted) return;
 
                                 if (count > 0) {
                                   sections.clear();

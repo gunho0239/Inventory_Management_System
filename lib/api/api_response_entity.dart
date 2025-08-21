@@ -11,13 +11,13 @@ class BulkRequestResult {
 }
 
 class SingleRequestResult {
-  final bool _success;
+  final bool _isSuccess;
   final String? _errorMessage;
 
   SingleRequestResult({required bool success, String? errorMessage})
-      : _success = success,
+      : _isSuccess = success,
         _errorMessage = errorMessage;
 
-  bool get success => _success;
+  bool get isSuccess => _isSuccess;
   String? get errorMessage => _errorMessage;
 }

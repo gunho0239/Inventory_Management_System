@@ -287,7 +287,7 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
 
                                 int count = await registerAllParts();
 
-                                if (!mounted) return;
+                                if (!context.mounted) return;
 
                                 if (count > 0) {
                                   setState(() {

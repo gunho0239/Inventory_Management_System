@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventory_management/providers/category_provider.dart';
 import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/providers/person_provider.dart';
 import 'package:inventory_management/providers/type_provider.dart';
@@ -21,6 +22,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => MakerProvider()),
         ChangeNotifierProvider(create: (_) => UnitProvider()),
         ChangeNotifierProvider(create: (_) => PersonProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
       ],
       child: MaterialApp(home: const MainApp())
     ),
@@ -52,6 +54,12 @@ class _MainAppState extends State<MainApp> {
   }
 
   Widget buildPage() => pages[selectedMenu] ?? Center(child: Text('선택된 메뉴가 없습니다.'));
+
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<CategoryProvider>(context, listen: false).reloadCategories();
+  }
 
   @override
   Widget build(BuildContext context) {
