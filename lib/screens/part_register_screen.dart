@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/datatable_source/part_data.dart';
-import 'package:inventory_management/main.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
+import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/part.dart';
 import 'package:inventory_management/models/part_maker.dart';
 import 'package:inventory_management/models/part_type.dart';
@@ -15,6 +16,7 @@ import 'package:inventory_management/screens/unit_management_screen.dart';
 import 'package:inventory_management/style/style.dart';
 import 'package:inventory_management/widgets/buttons.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
+import 'package:inventory_management/widgets/icon_label.dart';
 import 'package:inventory_management/widgets/title.dart';
 import 'package:provider/provider.dart';
 
@@ -186,79 +188,84 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(width: 10),
-                        Column(
-                          spacing: 20,
-                          children: [
-                            DropdownMenu<PartType>(
-                              label: Text("품명"),
-                              enableFilter: true,
-                              menuHeight: 400,
-                              width: 180,
-                              initialSelection: selectedType,
-                              onSelected: (type) {
-                                selectedType = type;
-                              },
-                              dropdownMenuEntries: typeProvider.typesDropdown,
-                            ),
-                            DropdownMenu<PartMaker>(
-                              label: Text("제조사"),
-                              enableFilter: true,
-                              menuHeight: 400,
-                              width: 180,
-                              initialSelection: selectedMaker,
-                              onSelected: (maker) {
-                                selectedMaker = maker;
-                              },
-                              dropdownMenuEntries: makerProvider.makersDropdown,
-                            ),
-                            DropdownMenu<PartUnit>(
-                              label: Text("단위"),
-                              enableFilter: true,
-                              menuHeight: 400,
-                              width: 180,
-                              initialSelection: selectedUnit,
-                              onSelected: (unit) {
-                                selectedUnit = unit;
-                              },
-                              dropdownMenuEntries: unitProvider.unitsDropdown,
-                            ),
-                            SizedBox(
-                              width: 180,
-                              child: TextField(
-                                controller: specFieldController,
-                                focusNode: _specFieldFocusNode,
-                                textAlign: TextAlign.start,
-                                decoration: InputDecoration(
-                                  labelText: "규격",
-                                  hintText: "입력 후 엔터",
-                                  border: OutlineInputBorder(),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10, top: 10),
+                          child: Column(
+                            spacing: 20,
+                            children: [
+                              DropdownMenu<PartType>(
+                                label: IconLabel(labelType: LabelType.type),
+                                enableFilter: true,
+                                menuHeight: 400,
+                                width: 180,
+                                initialSelection: selectedType,
+                                onSelected: (type) {
+                                  selectedType = type;
+                                },
+                                dropdownMenuEntries: typeProvider.typesDropdown,
+                              ),
+                              DropdownMenu<PartMaker>(
+                                label: IconLabel(labelType: LabelType.maker),
+                                enableFilter: true,
+                                menuHeight: 400,
+                                width: 180,
+                                initialSelection: selectedMaker,
+                                onSelected: (maker) {
+                                  selectedMaker = maker;
+                                },
+                                dropdownMenuEntries: makerProvider.makersDropdown,
+                              ),
+                              DropdownMenu<PartUnit>(
+                                label: IconLabel(labelType: LabelType.unit),
+                                enableFilter: true,
+                                menuHeight: 400,
+                                width: 180,
+                                initialSelection: selectedUnit,
+                                onSelected: (unit) {
+                                  selectedUnit = unit;
+                                },
+                                dropdownMenuEntries: unitProvider.unitsDropdown,
+                              ),
+                              SizedBox(
+                                width: 180,
+                                child: TextField(
+                                  controller: specFieldController,
+                                  focusNode: _specFieldFocusNode,
+                                  textAlign: TextAlign.start,
+                                  decoration: InputDecoration(
+                                    label: IconLabel(labelType: LabelType.specification),
+                                    hintText: "입력 후 엔터",
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  onSubmitted: (sectionName) {
+                                    addPart();
+                                  },
                                 ),
-                                onSubmitted: (sectionName) {
+                              ),
+                              ElevatedButton(
+                                child: Icon(Icons.add, size: 30),
+                                onPressed: () {
                                   addPart();
                                 },
                               ),
-                            ),
-                            ElevatedButton(
-                              child: Icon(Icons.add, size: 30),
-                              onPressed: () {
-                                addPart();
-                              },
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                        SizedBox(width: 50),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: SingleChildScrollView(
-                            child: SizedBox(
-                              width: 700,
-                              child: PaginatedDataTable(
-                                key: dataTableKey,
-                                columns: columns,
-                                source: _dataSource,
-                                rowsPerPage: 10,
-                                showCheckboxColumn: true,
+                        Spacer(flex: 1,),
+                        Flexible(
+                          flex: 30,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            child: SingleChildScrollView(
+                              child: SizedBox(
+                                width: 700,
+                                child: PaginatedDataTable(
+                                  key: dataTableKey,
+                                  columns: columns,
+                                  source: _dataSource,
+                                  rowsPerPage: 10,
+                                  showCheckboxColumn: true,
+                                ),
                               ),
                             ),
                           ),

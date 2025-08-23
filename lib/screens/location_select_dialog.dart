@@ -1,55 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:inventory_management/datatable_source/location_data.dart';
+import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/location.dart';
 import 'package:inventory_management/models/location_section.dart';
-import 'package:inventory_management/models/stock.dart';
 import 'package:inventory_management/providers/section_provider.dart';
 import 'package:inventory_management/repository/location_repository.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
+import 'package:inventory_management/widgets/icon_label.dart';
 import 'package:provider/provider.dart';
 
 class LocationSelectDialog extends StatefulWidget {
-  final Stock? stock;
 
-  const LocationSelectDialog({super.key, required this.stock});
+  const LocationSelectDialog({super.key});
 
   @override
   State<LocationSelectDialog> createState() => _LocationSelectDialogState();
 }
 
 class _LocationSelectDialogState extends State<LocationSelectDialog> {
-  late LocationSection selectedSection;
+  final TextEditingController _numberFieldController = TextEditingController();
+  final FocusNode _numberFieldFocusNode = FocusNode();
+  late LocationSection _selectedSection;
 
-  final List<DataColumn> columns = [
+  final List<DataColumn> _columns = [
     DataColumn(label: Text('구역')),
     DataColumn(label: Text('번호')),
   ];
   late LocationDataSource _dataSource;
-  Key dataTableKey = UniqueKey();
-  List<Location> inquiredLocations = [];
-  Location? selectedLocation;
+  Key _dataTableKey = UniqueKey();
+  List<Location> _inquiredLocations = [];
+  Location? _selectedLocation;
 
   @override
   void initState() {
     super.initState();
     final sectionProvider = Provider.of<SectionProvider>(context, listen: false);
-    selectedSection = sectionProvider.allSection;
+    _selectedSection = sectionProvider.allSection;
     sectionProvider.reloadSections();
-    // getLocations();
   }
 
   void getLocations() async {
     LocationRepository locationRepo = LocationRepository();
+    final sectionProvider = Provider.of<SectionProvider>(context, listen: false);
 
-    if (selectedSection == Provider.of<SectionProvider>(context, listen: false).allSection) {
-      inquiredLocations = await locationRepo.getAllLocations();
-    } else {
-      inquiredLocations = await locationRepo.getLocationsBySection(
-        selectedSection.id!,
-      );
-    }
+    final bool isAllSection = _selectedSection == sectionProvider.allSection;
+    final String numberText = _numberFieldController.text.trim();
 
-    selectedLocation = null;
+    _inquiredLocations = await switch ((isAllSection, numberText.isEmpty)) {
+      (true, true) => locationRepo.getAllLocations(),
+      (false, true) => locationRepo.getLocationsBySection(_selectedSection.id!),
+      _ => locationRepo.getLocationsByFilter(
+              isAllSection ? null : _selectedSection.id!,
+              numberText.isEmpty ? null : int.parse(numberText),
+            ),
+    };
+
+    // if (isAllSection) {
+    //   _inquiredLocations = await locationRepo.getAllLocations();
+    // } else {
+    //   _inquiredLocations = await locationRepo.getLocationsBySection(
+    //     _selectedSection.id!,
+    //   );
+    // }
+
+    _selectedLocation = null;
+    _dataTableKey = UniqueKey();
     setState(() {});
   }
 
@@ -59,14 +75,14 @@ class _LocationSelectDialogState extends State<LocationSelectDialog> {
     final sectionProvider = Provider.of<SectionProvider>(context);
 
     _dataSource = LocationDataSource(
-      locations: inquiredLocations,
-      selectedLocations: (selectedLocation == null) ? {} : {selectedLocation!},
+      locations: _inquiredLocations,
+      selectedLocations: (_selectedLocation == null) ? {} : {_selectedLocation!},
       onSelectChanged: (location, selected) {
         setState(() {
           if (selected) {
-            selectedLocation = location;
+            _selectedLocation = location;
           } else {
-            selectedLocation = null;
+            _selectedLocation = null;
           }
         });
       },
@@ -80,16 +96,41 @@ class _LocationSelectDialogState extends State<LocationSelectDialog> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10.0),
-            child: DropdownMenu<LocationSection>(
-              label: Text("구역"),
-              enableFilter: true,
-              menuHeight: 400,
-              onSelected: (section) {
-                selectedSection = section!;
-                getLocations();
-                dataTableKey = UniqueKey();
-              },
-              dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 10,
+              children: [
+                DropdownMenu<LocationSection>(
+                  label: IconLabel(labelType: LabelType.section),
+                  enableFilter: true,
+                  menuHeight: 400,
+                  width: 150,
+                  onSelected: (section) {
+                    _selectedSection = section!;
+                    getLocations();
+                  },
+                  dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
+                ),
+                SizedBox(
+                  width: 150,
+                  child: TextField(
+                    controller: _numberFieldController,
+                    focusNode: _numberFieldFocusNode,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    decoration: InputDecoration(
+                      label: IconLabel(labelType: LabelType.number),
+                      hintText: "입력 후 엔터",
+                      border: OutlineInputBorder(),
+                    ),
+                    onSubmitted: (locationNumber) {
+                      getLocations();
+                      FocusScope.of(context).requestFocus(_numberFieldFocusNode);
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(
@@ -97,8 +138,8 @@ class _LocationSelectDialogState extends State<LocationSelectDialog> {
               width: 500,
               child: SingleChildScrollView(
                 child: PaginatedDataTable(
-                  key: dataTableKey,
-                  columns: columns,
+                  key: _dataTableKey,
+                  columns: _columns,
                   source: _dataSource,
                   rowsPerPage: 10,
                   showCheckboxColumn: true,
@@ -111,14 +152,8 @@ class _LocationSelectDialogState extends State<LocationSelectDialog> {
       actions: [
         TextButton(
           onPressed: () async {
-            if (selectedLocation != null) {
-              Stock newStock = Stock(
-                part: widget.stock?.part,
-                quantity: widget.stock?.quantity,
-                location: selectedLocation!,
-              );
-
-              Navigator.of(context).pop(newStock);
+            if (_selectedLocation != null) {
+              Navigator.of(context).pop(_selectedLocation);
             }
             else {
               showDialog(

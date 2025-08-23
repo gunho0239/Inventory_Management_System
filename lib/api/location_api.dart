@@ -15,6 +15,16 @@ class LocationApi {
     return (data as List).map((json) => Location.fromJson(json)).toList();
   }
 
+  Future<List<Location>> fetchLocationsByFilter(int? sectionId, int? number) async {
+    final queryParameters = {
+      'sectionId': sectionId?.toString(),
+      'number': number?.toString(),
+    }..removeWhere((key, value) => value == null);
+
+    final data = await ApiClient.get('${Endpoints.locations}/search?${Uri(queryParameters: queryParameters).query}');
+    return (data as List).map((json) => Location.fromJson(json)).toList();
+  }
+
   Future<Location> createLocation(Location location) async {
     final registeredData = await ApiClient.post('${Endpoints.locations}/single', location.toJson());
     return Location.fromJson(registeredData);

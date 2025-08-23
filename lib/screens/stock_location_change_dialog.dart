@@ -3,6 +3,7 @@ import 'package:flutter_spinbox/material.dart';
 import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/constants/columns.dart';
 import 'package:inventory_management/constants/menu_name.dart';
+import 'package:inventory_management/models/location.dart';
 import 'package:inventory_management/models/stock.dart';
 import 'package:inventory_management/models/stock_history.dart';
 import 'package:inventory_management/models/stock_history_category.dart';
@@ -10,22 +11,25 @@ import 'package:inventory_management/providers/category_provider.dart';
 import 'package:inventory_management/providers/person_provider.dart';
 import 'package:inventory_management/repository/stock_repository.dart';
 import 'package:inventory_management/repository/stock_history_repository.dart';
+import 'package:inventory_management/screens/location_select_dialog.dart';
+import 'package:inventory_management/style/style.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/icons.dart';
 import 'package:provider/provider.dart';
 
-class ReleaseDialog extends StatefulWidget {
+class LocationChangeDialog extends StatefulWidget {
   final Stock selectedStock;
 
-  const ReleaseDialog({super.key, required this.selectedStock});
+  const LocationChangeDialog({super.key, required this.selectedStock});
 
   @override
-  State<ReleaseDialog> createState() => _ReleaseDialogState();
+  State<LocationChangeDialog> createState() => _LocationChangeDialogState();
 }
 
-class _ReleaseDialogState extends State<ReleaseDialog> {
+class _LocationChangeDialogState extends State<LocationChangeDialog> {
+  Location? newLocation;
   final TextEditingController memoFieldController = TextEditingController();
-  late double releaseQuantity;
+  late double relocateQuantity;
   late final String currentUserName;
 
   final List<DataColumn> columns = [
@@ -39,57 +43,11 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
   ];
   late final List<DataRow> stockRow;
 
-
-  Future<SingleRequestResult> updateStock() async {
-    final stockRepo = StockRepository();
-    final stock = widget.selectedStock;
-    late final SingleRequestResult result;
-    final releaseQuantity = this.releaseQuantity.toInt();
-    final totalQuantity = stock.quantity ?? 0;
-
-    if (releaseQuantity == totalQuantity) {
-      result = await stockRepo.removeStock(stock);
-    }
-    else {
-      final modifiedStock = Stock(
-        id: stock.id,
-        part: stock.part,
-        location: stock.location,
-        quantity: totalQuantity - releaseQuantity,
-        version: stock.version,
-      );
-
-      result = await stockRepo.updateStock(modifiedStock);
-    }
-
-    return result;
-  }
-
-  Future<void> createStockHistory() async {
-    final stockHistoryRepo = StockHistoryRepository();
-    final stock = widget.selectedStock;
-
-    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
-    final personProvider = Provider.of<PersonProvider>(context, listen: false);
-    final beforeQuantity = stock.quantity ?? 0;
-    final stockLocation = '${stock.location?.section.section ?? ""} ${stock.location?.number ?? ""}';
-
-    final stockHistory = StockHistory(
-      category: categoryProvider.getCategory(StockHistoryCategoryType.release),
-      memo: memoFieldController.text.trim(),
-      type: stock.part?.type.type ?? "",
-      specification: stock.part?.specification ?? "",
-      maker: stock.part?.maker.maker ?? "",
-      unit: stock.part?.unit.unit ?? "",
-      beforeQuantity: beforeQuantity,
-      afterQuantity: beforeQuantity - releaseQuantity.toInt(),
-      beforeLocation: stockLocation,
-      afterLocation: stockLocation,
-      person: personProvider.currentUser?.name ?? "",
-    );
-
-    stockHistoryRepo.addHistory(stockHistory);
-  }
+  final List<DataColumn> locationColumns = [
+    DataColumn(label: Text(section)),
+    DataColumn(label: Text(number)),
+  ];
+  List<DataRow> locationRow = [];
 
 
   @override
@@ -97,7 +55,8 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
     super.initState();
 
     final stock = widget.selectedStock;
-    releaseQuantity = stock.quantity!.toDouble();
+    currentUserName = Provider.of<PersonProvider>(context, listen: false).currentUser!.name!;
+    relocateQuantity = stock.quantity!.toDouble();
     stockRow = [
       DataRow(cells: [
           DataCell(Text(stock.part?.type.type ?? "")),
@@ -110,8 +69,63 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
         ])
     ];
 
-    currentUserName = Provider.of<PersonProvider>(context, listen: false).currentUser!.name!;
+    updateLocationRow();
   }
+
+
+  void updateLocationRow() {
+    locationRow = [
+      DataRow(cells: [
+          DataCell(Text(newLocation?.section.section ?? "")),
+          DataCell(Text(newLocation?.number.toString() ?? "")),
+        ])
+    ];
+  }
+
+  Future<SingleRequestResult> updateStock() async {
+    final stockRepo = StockRepository();
+    final stock = widget.selectedStock;
+
+    final relocatedStock = Stock(
+      id: stock.id,
+      part: stock.part,
+      location: newLocation,
+      quantity: relocateQuantity.toInt(),
+      version: stock.version,
+    );
+
+    final requestResult = await stockRepo.updateStockLocation(relocatedStock);
+
+    return requestResult;
+  }
+
+  Future<void> createStockHistory() async {
+    final stockHistoryRepo = StockHistoryRepository();
+    final stock = widget.selectedStock;
+
+    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+    final personProvider = Provider.of<PersonProvider>(context, listen: false);
+    final beforeLocation = '${stock.location?.section.section ?? ""} ${stock.location?.number ?? ""}';
+    final afterLocation = '${newLocation?.section.section ?? ""} ${newLocation?.number ?? ""}';
+
+    final stockHistory = StockHistory(
+      category: categoryProvider.getCategory(StockHistoryCategoryType.locationChange),
+      memo: memoFieldController.text.trim(),
+      type: stock.part?.type.type ?? "",
+      specification: stock.part?.specification ?? "",
+      maker: stock.part?.maker.maker ?? "",
+      unit: stock.part?.unit.unit ?? "",
+      beforeQuantity: stock.quantity ?? 0,
+      afterQuantity: relocateQuantity.toInt(),
+      beforeLocation: beforeLocation,
+      afterLocation: afterLocation,
+      person: personProvider.currentUser?.name ?? "",
+    );
+
+    stockHistoryRepo.addHistory(stockHistory);
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -119,8 +133,8 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
       title: Row(
         spacing: 5,
         children: [
-          Icon(MenuIcons.release, size: 30),
-          Text(release, style: TextStyle(fontWeight: FontWeight.bold)),
+          Icon(MenuIcons.locationChange, size: 30),
+          Text(locationChange, style: TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
       content: SingleChildScrollView(
@@ -134,27 +148,52 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
               rows: stockRow,
             ),
             Row(
-              spacing: 30,
+              spacing: 40,
               children: [
                 SizedBox(
-                  width: 200,
+                  width: 180,
                   child: SpinBox(
                     min: 1,
                     max: widget.selectedStock.quantity!.toDouble(),
                     step: 1,
                     decoration: InputDecoration(
-                      labelText: '출고(사용) 수량',
+                      labelText: '이동 수량',
                     ),
-                    value: releaseQuantity,
+                    value: relocateQuantity,
                     onChanged: (value) {
                       setState(() {
-                        releaseQuantity = value;
+                        relocateQuantity = value;
                       });
                     },
                   ),
                 ),
+                Row(
+                  spacing: 10,
+                  children: [
+                    ElevatedButton(
+                      style: AppButtonStyle.newPage,
+                      child: Text('위치선택', style: TextStyle(fontSize: 18)),
+                      onPressed: () async {
+                        final inputLocation = await showDialog<Location>(
+                          context: context,
+                          builder: (context) => LocationSelectDialog(),
+                        );
+                    
+                        if (inputLocation != null) {
+                          newLocation = inputLocation;
+                          updateLocationRow();
+                          setState(() {});
+                        }
+                      }
+                    ),
+                    DataTable(
+                      columns: locationColumns,
+                      rows: locationRow,
+                    ),
+                  ],
+                ),
                 SizedBox(
-                  width: 180,
+                  width: 150,
                   child: TextField(
                     controller: TextEditingController(text: currentUserName),
                     readOnly: true,
@@ -174,6 +213,7 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
                 maxLength: 150,
                 decoration: InputDecoration(
                   labelText: '메모',
+                  hintText: '필요 시 입력',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -184,9 +224,19 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
       actions: [
         TextButton(
           onPressed: () async {
+            if (newLocation == null) {
+              showDialog(
+                context: context,
+                builder: (context) => ErrorDialog(
+                  message: '위치를 선택해주세요.',
+                ),
+              );
+              return;
+            }
+
             final proceed = await showDialog<bool>(
               context: context,
-              builder:(context) => ConfirmDialog(message: '출고(사용) 처리 하시겠습니까?'),
+              builder:(context) => ConfirmDialog(message: '위치를 변경 하시겠습니까?'),
             );
 
             if (!context.mounted) return;
@@ -204,7 +254,7 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
               } else {
                 await showDialog(
                   context: context,
-                  builder: (context) => ErrorDialog(message: requestResult.errorMessage ?? "출고(사용) 처리에 실패하였습니다. 새로고침 후 다시 시도해 주세요.")
+                  builder: (context) => ErrorDialog(message: requestResult.errorMessage ?? "재고 위치 이동에 실패하였습니다. 새로고침 후 다시 시도해 주세요.")
                 );
               }
               if (!context.mounted) return;

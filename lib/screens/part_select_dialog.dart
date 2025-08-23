@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/datatable_source/part_data.dart';
+import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/part.dart';
 import 'package:inventory_management/models/part_type.dart';
 import 'package:inventory_management/models/part_maker.dart';
-import 'package:inventory_management/models/stock.dart';
 import 'package:inventory_management/providers/type_provider.dart';
 import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/repository/part_repository.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
+import 'package:inventory_management/widgets/icon_label.dart';
 import 'package:provider/provider.dart';
 
 class PartSelectDialog extends StatefulWidget {
-  final Stock? stock;
 
-  const PartSelectDialog({super.key, required this.stock});
+  const PartSelectDialog({super.key});
 
   @override
   State<PartSelectDialog> createState() => _PartSelectDialogState();
@@ -106,7 +106,7 @@ class _PartSelectDialogState extends State<PartSelectDialog> {
               spacing: 10,
               children: [
                 DropdownMenu<PartType>(
-                  label: Text("품명"),
+                  label: IconLabel(labelType: LabelType.type),
                   enableFilter: true,
                   menuHeight: 400,
                   width: 180,
@@ -119,7 +119,7 @@ class _PartSelectDialogState extends State<PartSelectDialog> {
                       typeProvider.typesDropdownWithAll,
                 ),
                 DropdownMenu<PartMaker>(
-                  label: Text("제조사"),
+                  label: IconLabel(labelType: LabelType.maker),
                   enableFilter: true,
                   menuHeight: 400,
                   width: 180,
@@ -136,7 +136,7 @@ class _PartSelectDialogState extends State<PartSelectDialog> {
                   child: TextField(
                     controller: specFieldController,
                     decoration: InputDecoration(
-                      labelText: "규격",
+                      label: IconLabel(labelType: LabelType.specification),
                       hintText: "입력 후 엔터",
                       border: OutlineInputBorder(),
                     ),
@@ -170,12 +170,7 @@ class _PartSelectDialogState extends State<PartSelectDialog> {
         TextButton(
           onPressed: () async {
             if (selectedPart != null) {
-              Stock newStock = Stock(
-                part: selectedPart!,
-                quantity: widget.stock?.quantity,
-                location: widget.stock?.location,
-              );
-              Navigator.of(context).pop(newStock);              
+              Navigator.of(context).pop(selectedPart);              
             }
             else {
               showDialog(

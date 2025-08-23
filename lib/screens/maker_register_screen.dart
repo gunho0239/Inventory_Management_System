@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/datatable_source/part_maker_data.dart';
-import 'package:inventory_management/main.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/models/part_maker.dart';
 import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/repository/part_maker_repository.dart';
@@ -95,34 +95,39 @@ class _MakerRegisterScreenState extends State<MakerRegisterScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(width: 10),
-                        SizedBox(
-                          width: 180,
-                          child: TextField(
-                            controller: makerFieldController,
-                            focusNode: _makerFieldFocusNode,
-                            decoration: InputDecoration(
-                              labelText: "제조사 입력",
-                              hintText: "입력 후 엔터",
-                              border: OutlineInputBorder(),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10, top: 10),
+                          child: SizedBox(
+                            width: 180,
+                            child: TextField(
+                              controller: makerFieldController,
+                              focusNode: _makerFieldFocusNode,
+                              decoration: InputDecoration(
+                                labelText: "제조사 입력",
+                                hintText: "입력 후 엔터",
+                                border: OutlineInputBorder(),
+                              ),
+                              onSubmitted: (makerName) {
+                                addMaker(context, makerName.trim());
+                              },
                             ),
-                            onSubmitted: (makerName) {
-                              addMaker(context, makerName.trim());
-                            },
                           ),
                         ),
-                        SizedBox(width: 50),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: SingleChildScrollView(
-                            child: SizedBox(
-                              width: 500,
-                              child: PaginatedDataTable(
-                                key: dataTableKey,
-                                columns: columns,
-                                source: _dataSource,
-                                rowsPerPage: 10,
-                                showCheckboxColumn: true,
+                        Spacer(flex: 1,),
+                        Flexible(
+                          flex: 30,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            child: SingleChildScrollView(
+                              child: SizedBox(
+                                width: 500,
+                                child: PaginatedDataTable(
+                                  key: dataTableKey,
+                                  columns: columns,
+                                  source: _dataSource,
+                                  rowsPerPage: 10,
+                                  showCheckboxColumn: true,
+                                ),
                               ),
                             ),
                           ),

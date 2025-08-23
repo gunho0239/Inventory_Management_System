@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/datatable_source/location_section_data.dart';
-import 'package:inventory_management/main.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/models/location_section.dart';
 import 'package:inventory_management/providers/section_provider.dart';
 import 'package:inventory_management/repository/location_section_repository.dart';
@@ -95,34 +95,39 @@ class _SectionRegisterScreenState extends State<SectionRegisterScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(width: 10),
-                        SizedBox(
-                          width: 190,
-                          child: TextField(
-                            controller: sectionFieldController,
-                            focusNode: _sectionFieldFocusNode,
-                            decoration: InputDecoration(
-                              labelText: "구역 입력",
-                              hintText: '번호를 제외하고 입력',
-                              border: OutlineInputBorder(),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10.0, top: 10.0),
+                          child: SizedBox(
+                            width: 190,
+                            child: TextField(
+                              controller: sectionFieldController,
+                              focusNode: _sectionFieldFocusNode,
+                              decoration: InputDecoration(
+                                labelText: "구역 입력",
+                                hintText: '번호를 제외하고 입력',
+                                border: OutlineInputBorder(),
+                              ),
+                              onSubmitted: (sectionName) {
+                                addSection(context, sectionName.trim());
+                              },
                             ),
-                            onSubmitted: (sectionName) {
-                              addSection(context, sectionName.trim());
-                            },
                           ),
                         ),
-                        SizedBox(width: 50),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: SingleChildScrollView(
-                            child: SizedBox(
-                              width: 500,
-                              child: PaginatedDataTable(
-                                key: dataTableKey,
-                                columns: columns,
-                                source: _dataSource,
-                                rowsPerPage: 10,
-                                showCheckboxColumn: true,
+                        Spacer(flex: 1,),
+                        Flexible(
+                          flex: 30,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            child: SingleChildScrollView(
+                              child: SizedBox(
+                                width: 500,
+                                child: PaginatedDataTable(
+                                  key: dataTableKey,
+                                  columns: columns,
+                                  source: _dataSource,
+                                  rowsPerPage: 10,
+                                  showCheckboxColumn: true,
+                                ),
                               ),
                             ),
                           ),

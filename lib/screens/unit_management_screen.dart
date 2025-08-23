@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/datatable_source/part_unit_data.dart';
-import 'package:inventory_management/main.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/models/part_unit.dart';
 import 'package:inventory_management/providers/unit_provider.dart';
 import 'package:inventory_management/repository/part_unit_repository.dart';

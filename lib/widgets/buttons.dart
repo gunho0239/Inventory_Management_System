@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/constants/menu_name.dart';
-import 'package:inventory_management/main.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/screens/location_register_screen.dart';
 import 'package:inventory_management/screens/maker_register_screen.dart';
 import 'package:inventory_management/screens/part_register_screen.dart';

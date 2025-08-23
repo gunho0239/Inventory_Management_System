@@ -4,7 +4,7 @@ class StockHistory {
   final int? id;
   final DateTime? date;
   final StockHistoryCategory category;
-  final String note;
+  final String memo;
   final String type;
   final String specification;
   final String maker;
@@ -15,14 +15,14 @@ class StockHistory {
   final String afterLocation;
   final String person;
 
-  StockHistory({this.id, this.date, required this.category, required this.note, required this.type, required this.specification, required this.maker, required this.unit, required this.beforeQuantity, required this.afterQuantity, required this.beforeLocation, required this.afterLocation, required this.person});
+  StockHistory({this.id, this.date, required this.category, required this.memo, required this.type, required this.specification, required this.maker, required this.unit, required this.beforeQuantity, required this.afterQuantity, required this.beforeLocation, required this.afterLocation, required this.person});
 
   factory StockHistory.fromJson(Map<String, dynamic> json) =>
       StockHistory(
         id: json['id'],
         date: DateTime.parse(json['date']),
         category: StockHistoryCategory.fromJson(json['category']),
-        note: json['note'],
+        memo: json['memo'],
         type: json['type'],
         specification: json['specification'],
         maker: json['maker'],
@@ -35,7 +35,7 @@ class StockHistory {
       );
 
   Map<String, dynamic> toJson() => {
-        'note': note,
+        'memo': memo,
         'category': category.toJson(),
         'type': type,
         'specification': specification,
@@ -55,7 +55,7 @@ class StockHistory {
           runtimeType == other.runtimeType &&
           id == other.id &&
           date == other.date &&
-          note == other.note &&
+          memo == other.memo &&
           type == other.type &&
           specification == other.specification &&
           maker == other.maker &&
@@ -67,5 +67,5 @@ class StockHistory {
           person == other.person;
 
   @override
-  int get hashCode => id.hashCode ^ date.hashCode ^ note.hashCode ^ type.hashCode ^ specification.hashCode ^ maker.hashCode ^ unit.hashCode ^ beforeQuantity.hashCode ^ afterQuantity.hashCode ^ beforeLocation.hashCode ^ afterLocation.hashCode ^ person.hashCode;
+  int get hashCode => id.hashCode ^ date.hashCode ^ memo.hashCode ^ type.hashCode ^ specification.hashCode ^ maker.hashCode ^ unit.hashCode ^ beforeQuantity.hashCode ^ afterQuantity.hashCode ^ beforeLocation.hashCode ^ afterLocation.hashCode ^ person.hashCode;
 }

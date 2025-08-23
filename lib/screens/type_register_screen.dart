@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/datatable_source/part_type_data.dart';
-import 'package:inventory_management/main.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/models/part_type.dart';
 import 'package:inventory_management/providers/type_provider.dart';
 import 'package:inventory_management/repository/part_type_repository.dart';
@@ -95,34 +95,39 @@ class _TypeRegisterScreenState extends State<TypeRegisterScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(width: 10),
-                        SizedBox(
-                          width: 180,
-                          child: TextField(
-                            controller: typeFieldController,
-                            focusNode: _typeFieldFocusNode,
-                            decoration: InputDecoration(
-                              labelText: "품명 입력",
-                              hintText: "입력 후 엔터",
-                              border: OutlineInputBorder(),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10, top: 10),
+                          child: SizedBox(
+                            width: 180,
+                            child: TextField(
+                              controller: typeFieldController,
+                              focusNode: _typeFieldFocusNode,
+                              decoration: InputDecoration(
+                                labelText: "품명 입력",
+                                hintText: "입력 후 엔터",
+                                border: OutlineInputBorder(),
+                              ),
+                              onSubmitted: (typeName) {
+                                addType(context, typeName.trim());
+                              },
                             ),
-                            onSubmitted: (typeName) {
-                              addType(context, typeName.trim());
-                            },
                           ),
                         ),
-                        SizedBox(width: 50),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: SingleChildScrollView(
-                            child: SizedBox(
-                              width: 500,
-                              child: PaginatedDataTable(
-                                key: dataTableKey,
-                                columns: columns,
-                                source: _dataSource,
-                                rowsPerPage: 10,
-                                showCheckboxColumn: true,
+                        Spacer(flex: 1,),
+                        Flexible(
+                          flex: 30,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            child: SingleChildScrollView(
+                              child: SizedBox(
+                                width: 500,
+                                child: PaginatedDataTable(
+                                  key: dataTableKey,
+                                  columns: columns,
+                                  source: _dataSource,
+                                  rowsPerPage: 10,
+                                  showCheckboxColumn: true,
+                                ),
                               ),
                             ),
                           ),

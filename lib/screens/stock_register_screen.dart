@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:inventory_management/constants/columns.dart';
 import 'package:inventory_management/datatable_source/stock_data.dart';
-import 'package:inventory_management/main.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
+import 'package:inventory_management/models/location.dart';
+import 'package:inventory_management/models/part.dart';
 import 'package:inventory_management/models/part_maker.dart';
 import 'package:inventory_management/models/part_type.dart';
 import 'package:inventory_management/models/part_unit.dart';
@@ -19,6 +21,7 @@ import 'package:inventory_management/repository/stock_history_repository.dart';
 import 'package:inventory_management/repository/stock_repository.dart';
 import 'package:inventory_management/screens/location_select_dialog.dart';
 import 'package:inventory_management/screens/part_select_dialog.dart';
+import 'package:inventory_management/screens/user_management_dialog.dart';
 import 'package:inventory_management/style/style.dart';
 import 'package:inventory_management/widgets/buttons.dart';
 import 'package:inventory_management/widgets/title.dart';
@@ -46,7 +49,7 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
     DataColumn(label: Text(maker)),
     DataColumn(label: Text(unit)),
     DataColumn(label: Text(quantity)),
-    DataColumn(label: Text(location)),
+    DataColumn(label: Text(section)),
     DataColumn(label: Text(number)),
   ];
   Stock? inputStock;
@@ -92,7 +95,7 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
 
       return StockHistory(
         category: category,
-        note: "",
+        memo: "",
         type: stock.part?.type.type ?? "",
         specification: stock.part?.specification ?? "",
         maker: stock.part?.maker.maker ?? "",
@@ -179,17 +182,21 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                     ElevatedButton(
                       style: AppButtonStyle.newPage,
                       onPressed: () async {
-                        final currentStock = await showDialog<Stock>(
+                        final newPart = await showDialog<Part>(
                           context: context,
-                          builder: (context) => PartSelectDialog(stock: inputStock),
+                          builder: (context) => PartSelectDialog(),
                         );
 
-                        if (currentStock != null) {
-                          inputStock = currentStock;
+                        if (newPart != null) {
+                          inputStock = Stock(
+                            part: newPart,
+                            quantity: inputStock?.quantity,
+                            location: inputStock?.location,
+                            version: inputStock?.version,
+                          );
                           updateStockRows();
                           setState(() {});
                         }
-                        
                       },
                       child: Text('부품선택', style: TextStyle(fontSize: 18)),
                     ),
@@ -210,6 +217,7 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                             part: inputStock?.part,
                             quantity: int.parse(number),
                             location: inputStock?.location,
+                            version: inputStock?.version,
                           );
                           updateStockRows();
                           quantityController.clear();
@@ -220,13 +228,18 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                     ElevatedButton(
                       style: AppButtonStyle.newPage,
                       onPressed: () async {
-                        final currentStock = await showDialog<Stock>(
+                        final newLocation = await showDialog<Location>(
                           context: context,
-                          builder: (context) => LocationSelectDialog(stock: inputStock),
+                          builder: (context) => LocationSelectDialog(),
                         );
 
-                        if (currentStock != null) {
-                          inputStock = currentStock;
+                        if (newLocation != null) {
+                          inputStock = Stock(
+                            part: inputStock?.part,
+                            quantity: inputStock?.quantity,
+                            location: newLocation,
+                            version: inputStock?.version,
+                          );
                           updateStockRows();
                           setState(() {});
                         }
@@ -270,17 +283,14 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                     children: [
                       Flexible(
                         child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: SingleChildScrollView(
-                            child: SizedBox(
-                              width: 800,
-                              child: PaginatedDataTable(
-                                key: dataTableKey,
-                                columns: columns,
-                                source: _dataSource,
-                                rowsPerPage: 10,
-                                showCheckboxColumn: true,
-                              ),
+                          child: SizedBox(
+                            width: 800,
+                            child: PaginatedDataTable(
+                              key: dataTableKey,
+                              columns: columns,
+                              source: _dataSource,
+                              rowsPerPage: 10,
+                              showCheckboxColumn: true,
                             ),
                           ),
                         ),
@@ -306,6 +316,10 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                                 ),
                                 EditButton(
                                   onPressed: () async {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => UserManagementDialog(),
+                                    );
                                   },
                                 ),
                               ],

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/providers/category_provider.dart';
 import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/providers/person_provider.dart';
 import 'package:inventory_management/providers/type_provider.dart';
 import 'package:inventory_management/providers/unit_provider.dart';
 import 'package:inventory_management/screens/part_management_screen.dart';
+import 'package:inventory_management/screens/stock_history_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:inventory_management/providers/section_provider.dart';
 import 'package:inventory_management/widgets/navigationbar.dart';
@@ -24,7 +27,19 @@ void main() {
         ChangeNotifierProvider(create: (_) => PersonProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
       ],
-      child: MaterialApp(home: const MainApp())
+      child: MaterialApp(
+        localizationsDelegates: [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: [
+          const Locale('ko', 'KR'),
+          const Locale('en', 'US'),
+        ],
+        title: 'LSEng Inventory Management System',
+        home: const MainApp()
+      )
     ),
   );
     
@@ -45,6 +60,7 @@ class _MainAppState extends State<MainApp> {
     InventoryMenu.stockRegister: StockRegisterScreen(),
     InventoryMenu.partManagement: PartManagementScreen(),
     InventoryMenu.locationManagement: LocationManagementScreen(),
+    InventoryMenu.stockHistory: StockHistoryScreen(),
   };
 
   void onMenuSelect(InventoryMenu menu) {
@@ -81,20 +97,3 @@ class _MainAppState extends State<MainApp> {
   }
 }
 
-enum InventoryMenu {
-    stockManagement,   // 재고 조회
-    stockRegister,    // 재고 등록
-    partManagement,   // 부품 관리
-    partRegister,     // 부품 등록
-    typeManagement,   // 품명 관리
-    typeRegister,     // 품명명 등록
-    makerManagement,  // 제조사 관리
-    makerRegister,    // 제조사 등록
-    unitManagement,   // 단위 관리
-    unitRegister,     // 단위 등록
-    locationManagement,    // 위치 관리
-    locationRegister,      // 위치 등록
-    sectionManagement,     // 구역 관리
-    sectionRegister,       // 구역 등록
-    history,     // 변동 내역
-}

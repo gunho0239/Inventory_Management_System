@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/datatable_source/location_data.dart';
-import 'package:inventory_management/main.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
+import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/location.dart';
 import 'package:inventory_management/models/location_section.dart';
 import 'package:inventory_management/providers/section_provider.dart';
@@ -9,6 +10,7 @@ import 'package:inventory_management/repository/location_repository.dart';
 import 'package:inventory_management/screens/location_register_screen.dart';
 import 'package:inventory_management/widgets/buttons.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
+import 'package:inventory_management/widgets/icon_label.dart';
 import 'package:inventory_management/widgets/title.dart';
 import 'package:provider/provider.dart';
 
@@ -84,61 +86,67 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
               vertical: 20.0,
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 5.0,
-                        horizontal: 10.0,
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 5.0,
+                          horizontal: 10.0,
+                        ),
+                        child: DropdownMenu<LocationSection>(
+                          label: IconLabel(labelType: LabelType.section),
+                          enableFilter: true,
+                          menuHeight: 400,
+                          onSelected: (section) {
+                            selectedSection = section!;
+                            getLocations();
+                            dataTableKey = UniqueKey();
+                          },
+                          dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
+                        ),
                       ),
-                      child: DropdownMenu<LocationSection>(
-                        label: Text("구역"),
-                        enableFilter: true,
-                        menuHeight: 400,
-                        onSelected: (section) {
-                          selectedSection = section!;
-                          getLocations();
-                          dataTableKey = UniqueKey();
-                        },
-                        dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
-                      ),
-                    ),
-                    SizedBox(width: 20),
-                    RegisterPageButton(InventoryMenu.locationRegister,
-                      onPressed: () async {
-                        final refresh = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => LocationRegisterScreen(),
-                          ),
-                        );
-    
-                        if (refresh == true) {
-                          dataTableKey = UniqueKey();
-                          getLocations();
+                      SizedBox(width: 20),
+                      RegisterPageButton(InventoryMenu.locationRegister,
+                        onPressed: () async {
+                          final refresh = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LocationRegisterScreen(),
+                            ),
+                          );
+                      
+                          if (refresh == true) {
+                            dataTableKey = UniqueKey();
+                            getLocations();
+                          }
                         }
-                      }
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
                 Expanded(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(
-                        width: 500,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10.0,
-                          ),
-                          child: SingleChildScrollView(
-                            child: PaginatedDataTable(
-                              key: dataTableKey,
-                              columns: columns,
-                              source: _dataSource,
-                              rowsPerPage: 10,
-                              showCheckboxColumn: true,
+                      Flexible(
+                        child: SizedBox(
+                          width: 500,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10.0,
+                            ),
+                            child: SingleChildScrollView(
+                              child: PaginatedDataTable(
+                                key: dataTableKey,
+                                columns: columns,
+                                source: _dataSource,
+                                rowsPerPage: 10,
+                                showCheckboxColumn: true,
+                              ),
                             ),
                           ),
                         ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/datatable_source/part_maker_data.dart';
-import 'package:inventory_management/main.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/models/part_maker.dart';
 import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/repository/part_maker_repository.dart';
@@ -110,19 +110,21 @@ class _MakerManagementScreenState extends State<MakerManagementScreen> {
                             ),
                           ],
                         ),
-                        SizedBox(
-                          width: 500,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10.0,
-                            ),
-                            child: SingleChildScrollView(
-                              child: PaginatedDataTable(
-                                key: dataTableKey,
-                                columns: columns,
-                                source: _dataSource,
-                                rowsPerPage: 10,
-                                showCheckboxColumn: true,
+                        Flexible(
+                          child: SizedBox(
+                            width: 500,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10.0,
+                              ),
+                              child: SingleChildScrollView(
+                                child: PaginatedDataTable(
+                                  key: dataTableKey,
+                                  columns: columns,
+                                  source: _dataSource,
+                                  rowsPerPage: 10,
+                                  showCheckboxColumn: true,
+                                ),
                               ),
                             ),
                           ),

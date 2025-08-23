@@ -14,18 +14,19 @@ import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/icons.dart';
 import 'package:provider/provider.dart';
 
-class ReleaseDialog extends StatefulWidget {
+class QuantityChangeDialog extends StatefulWidget {
   final Stock selectedStock;
 
-  const ReleaseDialog({super.key, required this.selectedStock});
+  const QuantityChangeDialog({super.key, required this.selectedStock});
 
   @override
-  State<ReleaseDialog> createState() => _ReleaseDialogState();
+  State<QuantityChangeDialog> createState() => _QuantityChangeDialogState();
 }
 
-class _ReleaseDialogState extends State<ReleaseDialog> {
+class _QuantityChangeDialogState extends State<QuantityChangeDialog> {
   final TextEditingController memoFieldController = TextEditingController();
-  late double releaseQuantity;
+  late double resetQuantity;
+  bool deleteStock = false;
   late final String currentUserName;
 
   final List<DataColumn> columns = [
@@ -44,22 +45,21 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
     final stockRepo = StockRepository();
     final stock = widget.selectedStock;
     late final SingleRequestResult result;
-    final releaseQuantity = this.releaseQuantity.toInt();
-    final totalQuantity = stock.quantity ?? 0;
+    final resetQuantity = this.resetQuantity.toInt();
 
-    if (releaseQuantity == totalQuantity) {
-      result = await stockRepo.removeStock(stock);
-    }
-    else {
+    if (deleteStock == false) {
       final modifiedStock = Stock(
         id: stock.id,
         part: stock.part,
         location: stock.location,
-        quantity: totalQuantity - releaseQuantity,
+        quantity: resetQuantity,
         version: stock.version,
       );
 
       result = await stockRepo.updateStock(modifiedStock);
+    }
+    else {
+      result = await stockRepo.removeStock(stock);
     }
 
     return result;
@@ -71,18 +71,19 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
 
     final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
     final personProvider = Provider.of<PersonProvider>(context, listen: false);
-    final beforeQuantity = stock.quantity ?? 0;
+    
+    final afterQuantity = (deleteStock) ? 0 : resetQuantity.toInt();
     final stockLocation = '${stock.location?.section.section ?? ""} ${stock.location?.number ?? ""}';
 
     final stockHistory = StockHistory(
-      category: categoryProvider.getCategory(StockHistoryCategoryType.release),
+      category: categoryProvider.getCategory(StockHistoryCategoryType.quantityChange),
       memo: memoFieldController.text.trim(),
       type: stock.part?.type.type ?? "",
       specification: stock.part?.specification ?? "",
       maker: stock.part?.maker.maker ?? "",
       unit: stock.part?.unit.unit ?? "",
-      beforeQuantity: beforeQuantity,
-      afterQuantity: beforeQuantity - releaseQuantity.toInt(),
+      beforeQuantity: stock.quantity ?? 0,
+      afterQuantity: afterQuantity,
       beforeLocation: stockLocation,
       afterLocation: stockLocation,
       person: personProvider.currentUser?.name ?? "",
@@ -97,7 +98,7 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
     super.initState();
 
     final stock = widget.selectedStock;
-    releaseQuantity = stock.quantity!.toDouble();
+    resetQuantity = stock.quantity!.toDouble();
     stockRow = [
       DataRow(cells: [
           DataCell(Text(stock.part?.type.type ?? "")),
@@ -119,8 +120,8 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
       title: Row(
         spacing: 5,
         children: [
-          Icon(MenuIcons.release, size: 30),
-          Text(release, style: TextStyle(fontWeight: FontWeight.bold)),
+          Icon(MenuIcons.quantityChange, size: 30),
+          Text(quantityChange, style: TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
       content: SingleChildScrollView(
@@ -140,19 +141,31 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
                   width: 200,
                   child: SpinBox(
                     min: 1,
-                    max: widget.selectedStock.quantity!.toDouble(),
                     step: 1,
+                    enabled: !deleteStock,
                     decoration: InputDecoration(
-                      labelText: '출고(사용) 수량',
+                      labelText: '변경 수량',
                     ),
-                    value: releaseQuantity,
+                    value: resetQuantity,
                     onChanged: (value) {
                       setState(() {
-                        releaseQuantity = value;
+                        resetQuantity = value;
                       });
                     },
                   ),
                 ),
+                Flexible(
+                  child: CheckboxListTile(
+                    controlAffinity: ListTileControlAffinity.leading,
+                    title: Text('재고 삭제', ),
+                    value: deleteStock,  
+                    onChanged: (value) {  
+                      setState(() {  
+                        deleteStock = value!;  
+                      });  
+                    },  
+                  ),
+                ),  
                 SizedBox(
                   width: 180,
                   child: TextField(
@@ -174,6 +187,7 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
                 maxLength: 150,
                 decoration: InputDecoration(
                   labelText: '메모',
+                  hintText: '필요 시 입력',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -186,7 +200,7 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
           onPressed: () async {
             final proceed = await showDialog<bool>(
               context: context,
-              builder:(context) => ConfirmDialog(message: '출고(사용) 처리 하시겠습니까?'),
+              builder:(context) => ConfirmDialog(message: '재고의 수량을 변경 하시겠습니까?'),
             );
 
             if (!context.mounted) return;
@@ -204,7 +218,7 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
               } else {
                 await showDialog(
                   context: context,
-                  builder: (context) => ErrorDialog(message: requestResult.errorMessage ?? "출고(사용) 처리에 실패하였습니다. 새로고침 후 다시 시도해 주세요.")
+                  builder: (context) => ErrorDialog(message: requestResult.errorMessage ?? "재고 수량 변경에 실패하였습니다. 새로고침 후 다시 시도해 주세요.")
                 );
               }
               if (!context.mounted) return;

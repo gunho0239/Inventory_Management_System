@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:inventory_management/main.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/widgets/icons.dart';
 
 class SideNavigationBar extends StatelessWidget {
@@ -36,7 +36,7 @@ class SideNavigationBar extends StatelessWidget {
             navButton('위치관리', InventoryMenu.locationManagement),
           ],
         ),
-        navButton('변동기록', InventoryMenu.history),
+        navButton('변동내역', InventoryMenu.stockHistory),
       ],
     );
   }
@@ -51,7 +51,7 @@ class SideNavigationBar extends StatelessWidget {
         return Icon(MenuIcons.part, size: 20);
       case InventoryMenu.locationManagement:
         return Icon(MenuIcons.location, size: 20);
-      case InventoryMenu.history:
+      case InventoryMenu.stockHistory:
         return Icon(MenuIcons.history, size: 20);
       default:
         return Icon(Icons.help, size: 20);

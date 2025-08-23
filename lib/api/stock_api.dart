@@ -53,10 +53,15 @@ class StockApi {
     return SingleRequestResult(success: responseBody["success"], errorMessage: responseBody["message"]);
   }
 
-  Future<SingleRequestResult> updateStockQuantity(Stock stock) async {
-    dynamic responseBody = await ApiClient.put('${Endpoints.stocks}/quantity', stock.toJson());
+  Future<SingleRequestResult> updateStock(Stock stock) async {
+    dynamic responseBody = await ApiClient.put('${Endpoints.stocks}/single', stock.toJson());
     return SingleRequestResult(success: responseBody["success"], errorMessage: responseBody["message"]);
   }
+
+  // Future<SingleRequestResult> updateStockQuantity(Stock stock) async {
+  //   dynamic responseBody = await ApiClient.put('${Endpoints.stocks}/quantity', stock.toJson());
+  //   return SingleRequestResult(success: responseBody["success"], errorMessage: responseBody["message"]);
+  // }
 
   Future<SingleRequestResult> updateStockLocation(Stock stock) async {
     dynamic responseBody = await ApiClient.put('${Endpoints.stocks}/location', stock.toJson());

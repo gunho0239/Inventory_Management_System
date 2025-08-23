@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:inventory_management/datatable_source/location_data.dart';
-import 'package:inventory_management/main.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
+import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/location.dart';
 import 'package:inventory_management/models/location_section.dart';
 import 'package:inventory_management/providers/section_provider.dart';
@@ -9,6 +11,7 @@ import 'package:inventory_management/screens/section_management_screen.dart';
 import 'package:inventory_management/style/style.dart';
 import 'package:inventory_management/widgets/buttons.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
+import 'package:inventory_management/widgets/icon_label.dart';
 import 'package:inventory_management/widgets/title.dart';
 import 'package:provider/provider.dart';
 
@@ -130,10 +133,9 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
                         SizedBox(width: 10),
                         Column(
                           spacing: 20,
-                          // crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             DropdownMenu<LocationSection>(
-                              label: Text("구역"),
+                              label: IconLabel(labelType: LabelType.section),
                               menuHeight: 400,
                               initialSelection: selectedSection,
                               onSelected: (section) {
@@ -141,25 +143,17 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
                                   selectedSection = section;
                                 });
                               },
-                              dropdownMenuEntries: sectionProvider
-                                  .sections
-                                  .map(
-                                    (section) =>
-                                        DropdownMenuEntry<
-                                          LocationSection
-                                        >(
-                                          value: section,
-                                          label: section.section!,
-                                        ),
-                                  )
-                                  .toList(),
+                              dropdownMenuEntries: sectionProvider.sectionsDropdown,
                             ),
                             SizedBox(
                               width: 130,
                               child: TextField(
                                 controller: startNumberController,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
                                 decoration: InputDecoration(
-                                  labelText: "시작 번호",
+                                  label: IconLabel(labelType: LabelType.startNumber),
                                   border: OutlineInputBorder(),
                                 ),
                               ),
@@ -168,45 +162,50 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
                               width: 130,
                               child: TextField(
                                 controller: endNumberController,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
                                 decoration: InputDecoration(
-                                  labelText: "종료 번호",
+                                  label: IconLabel(labelType: LabelType.endNumber),
                                   border: OutlineInputBorder(),
                                 ),
                               ),
                             ),
                             ElevatedButton(
                               onPressed: () {
-                                if (selectedSection == null) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('구역을 선택해주세요.')),
-                                  );
-                                  return;
-                                }
-                                if (startNumberController.text.isEmpty ||
+                                if (selectedSection == null ||
+                                    startNumberController.text.isEmpty ||
                                     endNumberController.text.isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('번호를 입력해주세요.')),
+                                    SnackBar(content: Text('모든 항목을 입력해주세요.')),
                                   );
                                   return;
                                 }
-                                if (int.tryParse(startNumberController.text) ==
-                                        null ||
-                                    int.tryParse(endNumberController.text) ==
-                                        null) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('숫자를 입력해주세요.')),
-                                  );
-                                  return;
-                                }
-                                if (int.parse(startNumberController.text) < 0 ||
-                                    int.parse(endNumberController.text) < 0) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('번호는 0 이상의 숫자를 입력해주세요.'),
-                                    ),
-                                  );
-                                  return;
-                                }
+                                // if (startNumberController.text.isEmpty ||
+                                //     endNumberController.text.isEmpty) {
+                                //   ScaffoldMessenger.of(context).showSnackBar(
+                                //     SnackBar(content: Text('번호를 입력해주세요.')),
+                                //   );
+                                //   return;
+                                // }
+                                // if (int.tryParse(startNumberController.text) ==
+                                //         null ||
+                                //     int.tryParse(endNumberController.text) ==
+                                //         null) {
+                                //   ScaffoldMessenger.of(context).showSnackBar(
+                                //     SnackBar(content: Text('숫자를 입력해주세요.')),
+                                //   );
+                                //   return;
+                                // }
+                                // if (int.parse(startNumberController.text) < 0 ||
+                                //     int.parse(endNumberController.text) < 0) {
+                                //   ScaffoldMessenger.of(context).showSnackBar(
+                                //     SnackBar(
+                                //       content: Text('번호는 0 이상의 숫자를 입력해주세요.'),
+                                //     ),
+                                //   );
+                                //   return;
+                                // }
                                 addLocation(
                                   selectedSection!,
                                   startNumberController.text,
@@ -221,18 +220,20 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
                           ],
                         ),
                         SizedBox(width: 50),
-                        SizedBox(
-                          width: 500,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20.0,
-                            ),
-                            child: SingleChildScrollView(
-                              child: PaginatedDataTable(
-                                columns: columns,
-                                source: _dataSource,
-                                rowsPerPage: 10,
-                                showCheckboxColumn: true,
+                        Flexible(
+                          child: SizedBox(
+                            width: 500,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20.0,
+                              ),
+                              child: SingleChildScrollView(
+                                child: PaginatedDataTable(
+                                  columns: columns,
+                                  source: _dataSource,
+                                  rowsPerPage: 10,
+                                  showCheckboxColumn: true,
+                                ),
                               ),
                             ),
                           ),

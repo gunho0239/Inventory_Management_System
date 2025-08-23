@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:inventory_management/main.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/widgets/icons.dart';
 
 class ScreenTitle extends StatelessWidget {
@@ -31,8 +31,8 @@ class ScreenTitle extends StatelessWidget {
       case InventoryMenu.sectionManagement:
       case InventoryMenu.sectionRegister:
         return Icon(MenuIcons.section, size: 30);
-      default:
-        return Icon(Icons.inventory, size: 30);
+      case InventoryMenu.stockHistory:
+        return Icon(MenuIcons.history, size: 30);
     }
   }
 
@@ -66,7 +66,7 @@ class ScreenTitle extends StatelessWidget {
         return '구역 관리';
       case InventoryMenu.sectionRegister:
         return '구역 등록';
-      case InventoryMenu.history:
+      case InventoryMenu.stockHistory:
         return '변동 내역';
     }
   }

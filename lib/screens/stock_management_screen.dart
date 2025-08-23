@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/datatable_source/stock_data.dart';
-import 'package:inventory_management/main.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
+import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/location_section.dart';
 import 'package:inventory_management/models/part_maker.dart';
 import 'package:inventory_management/models/part_type.dart';
@@ -11,11 +12,17 @@ import 'package:inventory_management/providers/person_provider.dart';
 import 'package:inventory_management/providers/section_provider.dart';
 import 'package:inventory_management/providers/type_provider.dart';
 import 'package:inventory_management/repository/stock_repository.dart';
+import 'package:inventory_management/screens/stock_location_change_dialog.dart';
+import 'package:inventory_management/screens/stock_quantity_change_dialog.dart';
 import 'package:inventory_management/screens/stock_release_dialog.dart';
+import 'package:inventory_management/screens/user_management_dialog.dart';
 import 'package:inventory_management/widgets/buttons.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
+import 'package:inventory_management/widgets/icon_label.dart';
 import 'package:inventory_management/widgets/title.dart';
 import 'package:provider/provider.dart';
+
+enum DialogType { release, quantityChange, locationChange }
 
 class StockManagementScreen extends StatefulWidget {
   const StockManagementScreen({super.key});
@@ -97,6 +104,42 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
     setState(() {});
   }
 
+  showEachDialog(BuildContext context, DialogType dialogType) async {
+    final personProvider = Provider.of<PersonProvider>(context, listen: false);
+
+    if (selectedStock == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('재고를 선택해주세요.')),
+      );
+    }
+    else if (personProvider.currentUser == null) {
+      showDialog(
+        context: context,
+        builder: (context) =>
+            ErrorDialog(message: '시스템 사용자를 선택해주세요.'),
+      );
+    }
+    else {
+      Widget dialog = switch (dialogType) {
+        DialogType.release => ReleaseDialog(selectedStock: selectedStock!),
+        DialogType.quantityChange => QuantityChangeDialog(selectedStock: selectedStock!),
+        DialogType.locationChange => LocationChangeDialog(selectedStock: selectedStock!),
+      };
+
+      final refresh = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return dialog;
+        },
+      );
+
+      if (refresh == true) {
+        dataTableKey = UniqueKey();
+        getStocks();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final typeProvider = Provider.of<TypeProvider>(context);
@@ -129,85 +172,92 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
               vertical: 20.0,
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               spacing: 10,
               children: [
-                Row(
-                  spacing: 20,
-                  children: [
-                    DropdownMenu<PartType>(
-                      label: Text("품명"),
-                      enableFilter: true,
-                      menuHeight: 400,
-                      width: 150,
-                      onSelected: (type) {
-                        selectedType = type ?? typeProvider.allType;
-                        getStocks();
-                        dataTableKey = UniqueKey();
-                      },
-                      dropdownMenuEntries:
-                          typeProvider.typesDropdownWithAll,
-                    ),
-                    DropdownMenu<PartMaker>(
-                      label: Text("제조사"),
-                      enableFilter: true,
-                      menuHeight: 400,
-                      width: 150,
-                      onSelected: (maker) {
-                        selectedMaker = maker ?? makerProvider.allMaker;
-                        getStocks();
-                        dataTableKey = UniqueKey();
-                      },
-                      dropdownMenuEntries:
-                          makerProvider.makersDropdownWithAll,
-                    ),
-                    SizedBox(
-                      width: 180,
-                      child: TextField(
-                        controller: specFieldController,
-                        focusNode: _specFieldFocusNode,
-                        decoration: InputDecoration(
-                          labelText: "규격",
-                          hintText: "입력 후 엔터",
-                          border: OutlineInputBorder(),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 5.0),
+                    child: Row(
+                      spacing: 20,
+                      children: [
+                        DropdownMenu<PartType>(
+                          label: IconLabel(labelType: LabelType.type),
+                          enableFilter: true,
+                          menuHeight: 400,
+                          width: 150,
+                          onSelected: (type) {
+                            selectedType = type ?? typeProvider.allType;
+                            getStocks();
+                            dataTableKey = UniqueKey();
+                          },
+                          dropdownMenuEntries:
+                              typeProvider.typesDropdownWithAll,
                         ),
-                        onSubmitted: (sectionName) {
-                          dataTableKey = UniqueKey();
-                          getStocks();
-                          FocusScope.of(context).requestFocus(_specFieldFocusNode);
-                        },
-                      ),
-                    ),
-                    DropdownMenu<LocationSection>(
-                      label: Text("구역"),
-                      enableFilter: true,
-                      menuHeight: 400,
-                      width: 150,
-                      onSelected: (section) {
-                        selectedSection = section ?? sectionProvider.allSection;
-                        dataTableKey = UniqueKey();
-                        getStocks();
-                      },
-                      dropdownMenuEntries:
-                          sectionProvider.sectionsDropdownWithAll,
-                    ),
-                    SizedBox(
-                      width: 130,
-                      child: TextField(
-                        controller: numberFieldController,
-                        focusNode: _numberFieldFocusNode,
-                        decoration: InputDecoration(
-                          labelText: "번호",
-                          hintText: "입력 후 엔터",
-                          border: OutlineInputBorder(),
+                        DropdownMenu<PartMaker>(
+                          label: IconLabel(labelType: LabelType.maker),
+                          enableFilter: true,
+                          menuHeight: 400,
+                          width: 160,
+                          onSelected: (maker) {
+                            selectedMaker = maker ?? makerProvider.allMaker;
+                            getStocks();
+                            dataTableKey = UniqueKey();
+                          },
+                          dropdownMenuEntries:
+                              makerProvider.makersDropdownWithAll,
                         ),
-                        onSubmitted: (sectionName) {
-                          dataTableKey = UniqueKey();
-                          getStocks();
-                          FocusScope.of(context).requestFocus(_numberFieldFocusNode);
-                        },
-                      ),
+                        SizedBox(
+                          width: 180,
+                          child: TextField(
+                            controller: specFieldController,
+                            focusNode: _specFieldFocusNode,
+                            decoration: InputDecoration(
+                              label: IconLabel(labelType: LabelType.specification),
+                              hintText: "입력 후 엔터",
+                              border: OutlineInputBorder(),
+                            ),
+                            onSubmitted: (spec) {
+                              dataTableKey = UniqueKey();
+                              getStocks();
+                              FocusScope.of(context).requestFocus(_specFieldFocusNode);
+                            },
+                          ),
+                        ),
+                        DropdownMenu<LocationSection>(
+                          label: IconLabel(labelType: LabelType.section),
+                          enableFilter: true,
+                          menuHeight: 400,
+                          width: 150,
+                          onSelected: (section) {
+                            selectedSection = section ?? sectionProvider.allSection;
+                            dataTableKey = UniqueKey();
+                            getStocks();
+                          },
+                          dropdownMenuEntries:
+                              sectionProvider.sectionsDropdownWithAll,
+                        ),
+                        SizedBox(
+                          width: 130,
+                          child: TextField(
+                            controller: numberFieldController,
+                            focusNode: _numberFieldFocusNode,
+                            decoration: InputDecoration(
+                              label: IconLabel(labelType: LabelType.number),
+                              hintText: "입력 후 엔터",
+                              border: OutlineInputBorder(),
+                            ),
+                            onSubmitted: (sectionName) {
+                              dataTableKey = UniqueKey();
+                              getStocks();
+                              FocusScope.of(context).requestFocus(_numberFieldFocusNode);
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
                 Expanded(
                   child: Row(
@@ -215,17 +265,14 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
                     children: [
                       Flexible(
                         child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: SingleChildScrollView(
-                            child: SizedBox(
-                              width: 800,
-                              child: PaginatedDataTable(
-                                key: dataTableKey,
-                                columns: columns,
-                                source: _dataSource,
-                                rowsPerPage: 10,
-                                showCheckboxColumn: true,
-                              ),
+                          child: SizedBox(
+                            width: 900,
+                            child: PaginatedDataTable(
+                              key: dataTableKey,
+                              columns: columns,
+                              source: _dataSource,
+                              rowsPerPage: 10,
+                              showCheckboxColumn: true,
                             ),
                           ),
                         ),
@@ -253,45 +300,38 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
                                 ),
                                 EditButton(
                                   onPressed: () async {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => UserManagementDialog(),
+                                    );
                                   },
                                 ),
                               ],
                             ),
                             ReleaseButton(
                               onPressed: () async {
-                                if (selectedStock == null) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('재고를 선택해주세요.')),
-                                  );
-                                }
-                                else if (personProvider.currentUser == null) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) =>
-                                        ErrorDialog(message: '시스템 사용자를 선택해주세요.'),
-                                  );
-                                }
-                                else {
-                                  final refresh = await showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return ReleaseDialog(
-                                        selectedStock: selectedStock!,
-                                      );
-                                    },
-                                  );
-
-                                  if (refresh) {
-                                    dataTableKey = UniqueKey();
-                                    getStocks();
-                                  }
-                                }
+                                showEachDialog(
+                                  context, 
+                                  DialogType.release,
+                                );
                               },
                             ),
-                            QuantityChangeButton(onPressed: () {
-                        
-                            }),
-                            LocationChangeButton(onPressed: () {}),
+                            QuantityChangeButton(
+                              onPressed: () {
+                                showEachDialog(
+                                  context, 
+                                  DialogType.quantityChange,
+                                );
+                              },
+                            ),
+                            LocationChangeButton(
+                              onPressed: () {
+                                showEachDialog(
+                                  context, 
+                                  DialogType.locationChange,
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ),

@@ -10,8 +10,9 @@ class PersonApi {
     return (data as List).map((json) => Person.fromJson(json)).toList();
   }
 
-  Future<void> createPerson(Person person) async {
-    await ApiClient.post(Endpoints.persons, person.toJson());
+  Future<Person> createPerson(Person person) async {
+    final registeredData = await ApiClient.post(Endpoints.persons, person.toJson());
+    return Person.fromJson(registeredData);
   }
 
   Future<List<Person>> createPersons(List<Person> persons) async {

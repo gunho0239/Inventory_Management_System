@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/datatable_source/part_unit_data.dart';
-import 'package:inventory_management/main.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/models/part_unit.dart';
 import 'package:inventory_management/providers/unit_provider.dart';
 import 'package:inventory_management/repository/part_unit_repository.dart';
@@ -95,34 +95,39 @@ class _UnitRegisterScreenState extends State<UnitRegisterScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(width: 10),
-                        SizedBox(
-                          width: 180,
-                          child: TextField(
-                            controller: unitFieldController,
-                            focusNode: _unitFieldFocusNode,
-                            decoration: InputDecoration(
-                              labelText: "단위 입력",
-                              hintText: "입력 후 엔터",
-                              border: OutlineInputBorder(),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10, top: 10,),
+                          child: SizedBox(
+                            width: 180,
+                            child: TextField(
+                              controller: unitFieldController,
+                              focusNode: _unitFieldFocusNode,
+                              decoration: InputDecoration(
+                                labelText: "단위 입력",
+                                hintText: "입력 후 엔터",
+                                border: OutlineInputBorder(),
+                              ),
+                              onSubmitted: (unitName) {
+                                addUnit(context, unitName.trim());
+                              },
                             ),
-                            onSubmitted: (unitName) {
-                              addUnit(context, unitName.trim());
-                            },
                           ),
                         ),
-                        SizedBox(width: 50),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: SingleChildScrollView(
-                            child: SizedBox(
-                              width: 500,
-                              child: PaginatedDataTable(
-                                key: dataTableKey,
-                                columns: columns,
-                                source: _dataSource,
-                                rowsPerPage: 10,
-                                showCheckboxColumn: true,
+                        Spacer(flex: 1,),
+                        Flexible(
+                          flex: 30,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            child: SingleChildScrollView(
+                              child: SizedBox(
+                                width: 500,
+                                child: PaginatedDataTable(
+                                  key: dataTableKey,
+                                  columns: columns,
+                                  source: _dataSource,
+                                  rowsPerPage: 10,
+                                  showCheckboxColumn: true,
+                                ),
                               ),
                             ),
                           ),

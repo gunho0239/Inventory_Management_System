@@ -6,7 +6,7 @@ class PersonRepository {
   final _api = PersonApi();
 
   Future<List<Person>> getAllPersons() => _api.fetchPersons();
-  Future<void> addPerson(Person person) => _api.createPerson(person);
+  Future<Person> addPerson(Person person) => _api.createPerson(person);
   Future<List<Person>> addPersons(List<Person> persons) => _api.createPersons(persons);
   Future<BulkRequestResult> removePersons(List<int> personIds) => _api.deletePersons(personIds);
 }

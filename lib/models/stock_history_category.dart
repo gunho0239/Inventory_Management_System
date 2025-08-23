@@ -9,6 +9,11 @@ class StockHistoryCategory {
 
   Map<String, dynamic> toJson() => {'id': id, 'category': category};
 
+  bool get isRegister => category == StockHistoryCategoryType.register.value;
+  bool get isRelease => category == StockHistoryCategoryType.release.value;
+  bool get isQuantityChange => category == StockHistoryCategoryType.quantityChange.value;
+  bool get isLocationChange => category == StockHistoryCategoryType.locationChange.value;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

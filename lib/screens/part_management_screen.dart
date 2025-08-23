@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/datatable_source/part_data.dart';
-import 'package:inventory_management/main.dart';
+import 'package:inventory_management/enums/inventory_menu.dart';
+import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/part.dart';
 import 'package:inventory_management/models/part_maker.dart';
 import 'package:inventory_management/models/part_type.dart';
@@ -11,6 +12,7 @@ import 'package:inventory_management/repository/part_repository.dart';
 import 'package:inventory_management/screens/part_register_screen.dart';
 import 'package:inventory_management/widgets/buttons.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
+import 'package:inventory_management/widgets/icon_label.dart';
 import 'package:inventory_management/widgets/title.dart';
 import 'package:provider/provider.dart';
 
@@ -104,91 +106,97 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
               vertical: 20.0,
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  spacing: 20,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5.0),
-                      child: DropdownMenu<PartType>(
-                        label: Text("품명"),
-                        enableFilter: true,
-                        menuHeight: 400,
-                        width: 150,
-                        onSelected: (type) {
-                          selectedType = type!;
-                          getParts();
-                          dataTableKey = UniqueKey();
-                        },
-                        dropdownMenuEntries:
-                            typeProvider.typesDropdownWithAll,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5.0),
-                      child: DropdownMenu<PartMaker>(
-                        label: Text("제조사"),
-                        enableFilter: true,
-                        menuHeight: 400,
-                        width: 150,
-                        onSelected: (maker) {
-                          selectedMaker = maker!;
-                          getParts();
-                          dataTableKey = UniqueKey();
-                        },
-                        dropdownMenuEntries:
-                            makerProvider.makersDropdownWithAll,
-                      ),
-                    ),
-                    SizedBox(
-                      width: 180,
-                      child: TextField(
-                        controller: specFieldController,
-                        decoration: InputDecoration(
-                          labelText: "규격",
-                          hintText: "입력 후 엔터",
-                          border: OutlineInputBorder(),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    spacing: 20,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: DropdownMenu<PartType>(
+                          label: IconLabel(labelType: LabelType.type),
+                          enableFilter: true,
+                          menuHeight: 400,
+                          width: 150,
+                          onSelected: (type) {
+                            selectedType = type!;
+                            getParts();
+                            dataTableKey = UniqueKey();
+                          },
+                          dropdownMenuEntries:
+                              typeProvider.typesDropdownWithAll,
                         ),
-                        onSubmitted: (sectionName) {
-                          dataTableKey = UniqueKey();
-                          getParts();
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: DropdownMenu<PartMaker>(
+                          label: IconLabel(labelType: LabelType.maker),
+                          enableFilter: true,
+                          menuHeight: 400,
+                          width: 160,
+                          onSelected: (maker) {
+                            selectedMaker = maker!;
+                            getParts();
+                            dataTableKey = UniqueKey();
+                          },
+                          dropdownMenuEntries:
+                              makerProvider.makersDropdownWithAll,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 180,
+                        child: TextField(
+                          controller: specFieldController,
+                          decoration: InputDecoration(
+                            label: IconLabel(labelType: LabelType.specification),
+                            hintText: "입력 후 엔터",
+                            border: OutlineInputBorder(),
+                          ),
+                          onSubmitted: (sectionName) {
+                            dataTableKey = UniqueKey();
+                            getParts();
+                          },
+                        ),
+                      ),
+                      RegisterPageButton(InventoryMenu.partRegister,
+                        onPressed: () async {
+                          final refresh = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PartRegisterScreen(),
+                            ),
+                          );
+                      
+                          if (refresh == true) {
+                            getParts();
+                            dataTableKey = UniqueKey();
+                          }
                         },
                       ),
-                    ),
-                    RegisterPageButton(InventoryMenu.partRegister,
-                      onPressed: () async {
-                        final refresh = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PartRegisterScreen(),
-                          ),
-                        );
-    
-                        if (refresh == true) {
-                          getParts();
-                          dataTableKey = UniqueKey();
-                        }
-                      },
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 Expanded(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(
-                        width: 700,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10.0,
-                          ),
-                          child: SingleChildScrollView(
-                            child: PaginatedDataTable(
-                              key: dataTableKey,
-                              columns: columns,
-                              source: _dataSource,
-                              rowsPerPage: 10,
-                              showCheckboxColumn: true,
+                      Flexible(
+                        child: SizedBox(
+                          width: 700,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10.0,
+                            ),
+                            child: SingleChildScrollView(
+                              child: PaginatedDataTable(
+                                key: dataTableKey,
+                                columns: columns,
+                                source: _dataSource,
+                                rowsPerPage: 10,
+                                showCheckboxColumn: true,
+                              ),
                             ),
                           ),
                         ),
