@@ -17,6 +17,28 @@ class StockHistory {
 
   StockHistory({this.id, this.date, required this.category, required this.memo, required this.type, required this.specification, required this.maker, required this.unit, required this.beforeQuantity, required this.afterQuantity, required this.beforeLocation, required this.afterLocation, required this.person});
 
+
+  String get formattedQuantity {
+    if (category.isRelease) {
+      return '${beforeQuantity - afterQuantity}';
+    }
+    else if (category.isQuantityChange) {
+      return '$beforeQuantity -> $afterQuantity';
+    }
+    else { // stockHistory.category.isLocationChange || stockHistory.category.isRegister
+      return afterQuantity.toString();
+    }
+  }
+
+  String get formattedLocation {
+    if (category.isLocationChange) {
+      return '$beforeLocation -> $afterLocation';
+    }
+    else { // stockHistory.category.isRegister || stockHistory.category.isRelease || stockHistory.category.isQuantityChange
+      return afterLocation;
+    }
+  }
+
   factory StockHistory.fromJson(Map<String, dynamic> json) =>
       StockHistory(
         id: json['id'],

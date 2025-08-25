@@ -141,6 +141,7 @@ class _QuantityChangeDialogState extends State<QuantityChangeDialog> {
                   width: 200,
                   child: SpinBox(
                     min: 1,
+                    max: 9999.0,
                     step: 1,
                     enabled: !deleteStock,
                     decoration: InputDecoration(
@@ -186,7 +187,7 @@ class _QuantityChangeDialogState extends State<QuantityChangeDialog> {
                 maxLines: 3,
                 maxLength: 150,
                 decoration: InputDecoration(
-                  labelText: '메모',
+                  labelText: '메모 (선택)',
                   hintText: '필요 시 입력',
                   border: OutlineInputBorder(),
                 ),

@@ -212,7 +212,7 @@ class _LocationChangeDialogState extends State<LocationChangeDialog> {
                 maxLines: 3,
                 maxLength: 150,
                 decoration: InputDecoration(
-                  labelText: '메모',
+                  labelText: '메모 (선택)',
                   hintText: '필요 시 입력',
                   border: OutlineInputBorder(),
                 ),

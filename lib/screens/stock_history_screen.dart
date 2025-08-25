@@ -7,6 +7,7 @@ import 'package:inventory_management/models/stock_history.dart';
 import 'package:inventory_management/models/stock_history_category.dart';
 import 'package:inventory_management/providers/category_provider.dart';
 import 'package:inventory_management/repository/stock_history_repository.dart';
+import 'package:inventory_management/screens/stock_history_details_dialog.dart';
 import 'package:inventory_management/widgets/icon_label.dart';
 import 'package:inventory_management/widgets/title.dart';
 import 'package:provider/provider.dart';
@@ -52,7 +53,7 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
   ];
   late StockHistoryDataSource _dataSource;
   Key _dataTableKey = UniqueKey();
-  List<StockHistory> inquiredStockHistories = [];
+  List<StockHistory> _inquiredStockHistories = [];
 
   @override
   void initState() {
@@ -61,8 +62,13 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
     final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
     selectedCategory = categoryProvider.allCategory;
 
-    _selectedEndDate = DateTime.now();
+    final now = DateTime.now();
+    _selectedEndDate = now;
+    _selectedStartDate = DateTime(now.year, now.month, now.day - 7);
     _endDateFieldController.text = _dateFormat.format(_selectedEndDate!);
+    _startDateFieldController.text = _dateFormat.format(_selectedStartDate!);
+    
+    getHistories();
   }
 
   void getHistories() async {
@@ -77,7 +83,7 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
     final String makerText = _makerFieldController.text.trim();
     final String memoText = _memoFieldController.text.trim();
 
-    inquiredStockHistories = await switch ((!hasStartDate, !hasEndDate, isAllCategory, typeText.isEmpty, specText.isEmpty, makerText.isEmpty, memoText.isEmpty)) {
+    _inquiredStockHistories = await switch ((!hasStartDate, !hasEndDate, isAllCategory, typeText.isEmpty, specText.isEmpty, makerText.isEmpty, memoText.isEmpty)) {
       (true, true, true, true, true, true, true) => historyRepo.getAllHistories(),
       (true, true,false, true, true, true, true) => historyRepo.getHistoriesByCategory(selectedCategory.id!),
       _ => historyRepo.getHistoriesByFilter(
@@ -123,7 +129,22 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
     final categoryProvider = Provider.of<CategoryProvider>(context);
 
     _dataSource = StockHistoryDataSource(
-      stockHistories: inquiredStockHistories,
+      stockHistories: _inquiredStockHistories,
+      onSelectChanged: (stockHistory, selected) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return HistoryDetailsDialog(selectedHistory: stockHistory);
+          },
+        );
+        // setState(() {
+        //   if (selected) {
+        //     _selectedStockHistory = stockHistory;
+        //   } else {
+        //     _selectedStockHistory = null;
+        //   }
+        // });
+      },
     );
 
     return Column(
@@ -289,6 +310,7 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
                               columns: _columns,
                               source: _dataSource,
                               rowsPerPage: 10,
+                              showCheckboxColumn: false,
                             ),
                           ),
                         ),

@@ -184,7 +184,7 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
                     children: [
                       Flexible(
                         child: SizedBox(
-                          width: 700,
+                          width: 900,
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10.0,

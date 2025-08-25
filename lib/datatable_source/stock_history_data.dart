@@ -5,10 +5,12 @@ import 'package:inventory_management/models/stock_history.dart';
 
 class StockHistoryDataSource extends DataTableSource {
   final List<StockHistory> stockHistories;
+  final void Function(StockHistory, bool) onSelectChanged;
   final DateFormat _dateFormat = DateFormat('yyyy-MM-dd HH:mm');
 
   StockHistoryDataSource({
     required this.stockHistories,
+    required this.onSelectChanged,
   });
 
   @override
@@ -17,28 +19,10 @@ class StockHistoryDataSource extends DataTableSource {
 
     final String createdDate = stockHistory.date != null ? _dateFormat.format(stockHistory.date!) : '-';
     final String memo = stockHistory.memo != "" ? stockHistory.memo.length > 15 ? '${stockHistory.memo.substring(0, 15)}...' : stockHistory.memo : '-';
-    late final String quantity;
-    late final String location;
-
-    if (stockHistory.category.isRelease) {
-      quantity = '${stockHistory.beforeQuantity - stockHistory.afterQuantity}';
-      location = stockHistory.beforeLocation;
-    }
-    else if (stockHistory.category.isQuantityChange) {
-      quantity = '${stockHistory.beforeQuantity} -> ${stockHistory.afterQuantity}';
-      location = stockHistory.beforeLocation;
-    }
-    else if (stockHistory.category.isLocationChange) {
-      quantity = stockHistory.beforeQuantity.toString();
-      location = '${stockHistory.beforeLocation} -> ${stockHistory.afterLocation}';
-    }
-    else { // stockHistory.category.isRegister
-      quantity = stockHistory.afterQuantity.toString();
-      location = stockHistory.afterLocation;
-    }
 
     return DataRow.byIndex(
       index: index,
+      onSelectChanged: (selected) => onSelectChanged(stockHistory, selected ?? false),
       cells: [
         DataCell(Text(createdDate)),
         DataCell(Text(stockHistory.category.category)),
@@ -47,8 +31,8 @@ class StockHistoryDataSource extends DataTableSource {
         DataCell(Text(stockHistory.specification)),
         DataCell(Text(stockHistory.maker)),
         DataCell(Text(stockHistory.unit)),
-        DataCell(Text(quantity)),
-        DataCell(Text(location)),
+        DataCell(Text(stockHistory.formattedQuantity)),
+        DataCell(Text(stockHistory.formattedLocation)),
         DataCell(Text(stockHistory.person)),
       ],
     );

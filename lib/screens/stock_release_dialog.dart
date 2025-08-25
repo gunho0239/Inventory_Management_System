@@ -24,11 +24,11 @@ class ReleaseDialog extends StatefulWidget {
 }
 
 class _ReleaseDialogState extends State<ReleaseDialog> {
-  final TextEditingController memoFieldController = TextEditingController();
-  late double releaseQuantity;
-  late final String currentUserName;
+  final TextEditingController _memoFieldController = TextEditingController();
+  late double _releaseQuantity;
+  late final String _currentUserName;
 
-  final List<DataColumn> columns = [
+  final List<DataColumn> _columns = [
     DataColumn(label: Text(type)),
     DataColumn(label: Text(specification)),
     DataColumn(label: Text(maker)),
@@ -37,14 +37,14 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
     DataColumn(label: Text(section)),
     DataColumn(label: Text(number)),
   ];
-  late final List<DataRow> stockRow;
+  late final List<DataRow> _stockRow;
 
 
   Future<SingleRequestResult> updateStock() async {
     final stockRepo = StockRepository();
     final stock = widget.selectedStock;
     late final SingleRequestResult result;
-    final releaseQuantity = this.releaseQuantity.toInt();
+    final releaseQuantity = _releaseQuantity.toInt();
     final totalQuantity = stock.quantity ?? 0;
 
     if (releaseQuantity == totalQuantity) {
@@ -76,13 +76,13 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
 
     final stockHistory = StockHistory(
       category: categoryProvider.getCategory(StockHistoryCategoryType.release),
-      memo: memoFieldController.text.trim(),
+      memo: _memoFieldController.text.trim(),
       type: stock.part?.type.type ?? "",
       specification: stock.part?.specification ?? "",
       maker: stock.part?.maker.maker ?? "",
       unit: stock.part?.unit.unit ?? "",
       beforeQuantity: beforeQuantity,
-      afterQuantity: beforeQuantity - releaseQuantity.toInt(),
+      afterQuantity: beforeQuantity - _releaseQuantity.toInt(),
       beforeLocation: stockLocation,
       afterLocation: stockLocation,
       person: personProvider.currentUser?.name ?? "",
@@ -97,8 +97,8 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
     super.initState();
 
     final stock = widget.selectedStock;
-    releaseQuantity = stock.quantity!.toDouble();
-    stockRow = [
+    _releaseQuantity = stock.quantity!.toDouble();
+    _stockRow = [
       DataRow(cells: [
           DataCell(Text(stock.part?.type.type ?? "")),
           DataCell(Text(stock.part?.specification ?? "")),
@@ -110,7 +110,7 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
         ])
     ];
 
-    currentUserName = Provider.of<PersonProvider>(context, listen: false).currentUser!.name!;
+    _currentUserName = Provider.of<PersonProvider>(context, listen: false).currentUser!.name!;
   }
 
   @override
@@ -130,8 +130,8 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
           spacing: 30,
           children: [
             DataTable(
-              columns: columns,
-              rows: stockRow,
+              columns: _columns,
+              rows: _stockRow,
             ),
             Row(
               spacing: 30,
@@ -145,10 +145,10 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
                     decoration: InputDecoration(
                       labelText: '출고(사용) 수량',
                     ),
-                    value: releaseQuantity,
+                    value: _releaseQuantity,
                     onChanged: (value) {
                       setState(() {
-                        releaseQuantity = value;
+                        _releaseQuantity = value;
                       });
                     },
                   ),
@@ -156,7 +156,7 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
                 SizedBox(
                   width: 180,
                   child: TextField(
-                    controller: TextEditingController(text: currentUserName),
+                    controller: TextEditingController(text: _currentUserName),
                     readOnly: true,
                     decoration: InputDecoration(
                       labelText: '시스템 사용자',
@@ -169,11 +169,11 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
             SizedBox(
               width: 700,
               child: TextField(
-                controller: memoFieldController,
+                controller: _memoFieldController,
                 maxLines: 3,
                 maxLength: 150,
                 decoration: InputDecoration(
-                  labelText: '메모',
+                  labelText: '메모 (필수)',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -184,6 +184,14 @@ class _ReleaseDialogState extends State<ReleaseDialog> {
       actions: [
         TextButton(
           onPressed: () async {
+            if (_memoFieldController.text.trim().isEmpty) {
+              showDialog(
+                context: context,
+                builder: (context) => ErrorDialog(message: '메모를 입력해 주세요.'),
+              );
+              return;
+            }
+
             final proceed = await showDialog<bool>(
               context: context,
               builder:(context) => ConfirmDialog(message: '출고(사용) 처리 하시겠습니까?'),

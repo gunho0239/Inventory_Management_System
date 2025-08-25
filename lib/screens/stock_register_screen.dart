@@ -5,18 +5,12 @@ import 'package:inventory_management/datatable_source/stock_data.dart';
 import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/models/location.dart';
 import 'package:inventory_management/models/part.dart';
-import 'package:inventory_management/models/part_maker.dart';
-import 'package:inventory_management/models/part_type.dart';
-import 'package:inventory_management/models/part_unit.dart';
 import 'package:inventory_management/models/person.dart';
 import 'package:inventory_management/models/stock.dart';
 import 'package:inventory_management/models/stock_history.dart';
 import 'package:inventory_management/models/stock_history_category.dart';
 import 'package:inventory_management/providers/category_provider.dart';
-import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/providers/person_provider.dart';
-import 'package:inventory_management/providers/type_provider.dart';
-import 'package:inventory_management/providers/unit_provider.dart';
 import 'package:inventory_management/repository/stock_history_repository.dart';
 import 'package:inventory_management/repository/stock_repository.dart';
 import 'package:inventory_management/screens/location_select_dialog.dart';
@@ -38,12 +32,10 @@ class StockRegisterScreen extends StatefulWidget {
 class _StockRegisterScreenState extends State<StockRegisterScreen> {
   bool refresh = false;
 
-  final TextEditingController quantityController = TextEditingController();
-  PartType? selectedType;
-  PartMaker? selectedMaker;
-  PartUnit? selectedUnit;
+  final TextEditingController _memoFieldController = TextEditingController();
+  final TextEditingController _quantityController = TextEditingController();
 
-  final List<DataColumn> columns = [
+  final List<DataColumn> _columns = [
     DataColumn(label: Text(type)),
     DataColumn(label: Text(specification)),
     DataColumn(label: Text(maker)),
@@ -52,16 +44,16 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
     DataColumn(label: Text(section)),
     DataColumn(label: Text(number)),
   ];
-  Stock? inputStock;
-  List<DataRow> inputStockRow = [];
+  Stock? _inputStock;
+  List<DataRow> _inputStockRow = [];
   late StockDataSource _dataSource;
-  Key dataTableKey = UniqueKey();
-  Set<Stock> stocks = {};
-  Set<Stock> selectedStocks = {};
+  Key _dataTableKey = UniqueKey();
+  final Set<Stock> _stocks = {};
+  final Set<Stock> _selectedStocks = {};
 
   void addStock() {
-    if (inputStock != null && inputStock?.part != null && inputStock?.quantity != null && inputStock?.location != null) {
-      stocks.add(inputStock!);
+    if (_inputStock != null && _inputStock?.part != null && _inputStock?.quantity != null && _inputStock?.location != null) {
+      _stocks.add(_inputStock!);
     } 
     else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -73,9 +65,9 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
   }
 
   Future<List<Stock>?> registerAllStocks() async {
-    if (stocks.isEmpty) return null;
+    if (_stocks.isEmpty) return null;
 
-    List<Stock> stockList = stocks.toList();
+    List<Stock> stockList = _stocks.toList();
 
     List<Stock> registeredStocks = await StockRepository()
         .addStocks(stockList);
@@ -89,13 +81,14 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
     final currentUser = Provider.of<PersonProvider>(context, listen: false).currentUser;
     final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
     final category = categoryProvider.getCategory(StockHistoryCategoryType.register);
+    final memo = _memoFieldController.text.trim();
     
     final stockHistories = registeredStocks.map((stock) {
       final stockLocation = '${stock.location?.section.section ?? ""} ${stock.location?.number ?? ""}';
 
       return StockHistory(
         category: category,
-        memo: "",
+        memo: memo,
         type: stock.part?.type.type ?? "",
         specification: stock.part?.specification ?? "",
         maker: stock.part?.maker.maker ?? "",
@@ -112,15 +105,15 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
   }
 
   void updateStockRows() {
-    inputStockRow = [
+    _inputStockRow = [
       DataRow(cells: [
-        DataCell(Text(inputStock?.part?.type.type ?? "")),
-        DataCell(Text(inputStock?.part?.specification ?? "")),
-        DataCell(Text(inputStock?.part?.maker.maker ?? "")),
-        DataCell(Text(inputStock?.part?.unit.unit ?? "")),
-        DataCell(Text(inputStock?.quantity?.toString() ?? "")),
-        DataCell(Text(inputStock?.location?.section.section ?? "")),
-        DataCell(Text(inputStock?.location?.number.toString() ?? "")),
+        DataCell(Text(_inputStock?.part?.type.type ?? "")),
+        DataCell(Text(_inputStock?.part?.specification ?? "")),
+        DataCell(Text(_inputStock?.part?.maker.maker ?? "")),
+        DataCell(Text(_inputStock?.part?.unit.unit ?? "")),
+        DataCell(Text(_inputStock?.quantity?.toString() ?? "")),
+        DataCell(Text(_inputStock?.location?.section.section ?? "")),
+        DataCell(Text(_inputStock?.location?.number.toString() ?? "")),
       ])
     ];
   }
@@ -129,18 +122,7 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
   void initState() {
     super.initState();
 
-    final typeProvider = Provider.of<TypeProvider>(context, listen: false);
-    final makerProvider = Provider.of<MakerProvider>(context, listen: false);
-    final unitProvider = Provider.of<UnitProvider>(context, listen: false);
     final personProvider = Provider.of<PersonProvider>(context, listen: false);
-
-    selectedType = typeProvider.allType;
-    selectedMaker = makerProvider.allMaker;
-    selectedUnit = unitProvider.allUnit;
-
-    typeProvider.reloadTypes();
-    makerProvider.reloadMakers();
-    unitProvider.reloadUnits();
     personProvider.reloadPersons();
   }
 
@@ -150,14 +132,14 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
     final personProvider = Provider.of<PersonProvider>(context, listen: false);
 
     _dataSource = StockDataSource(
-      stocks: stocks.toList(),
-      selectedStocks: selectedStocks,
+      stocks: _stocks.toList(),
+      selectedStocks: _selectedStocks,
       onSelectChanged: (stock, selected) {
         setState(() {
           if (selected) {
-            selectedStocks.add(stock);
+            _selectedStocks.add(stock);
           } else {
-            selectedStocks.remove(stock);
+            _selectedStocks.remove(stock);
           }
         });
       },
@@ -188,11 +170,11 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                         );
 
                         if (newPart != null) {
-                          inputStock = Stock(
+                          _inputStock = Stock(
                             part: newPart,
-                            quantity: inputStock?.quantity,
-                            location: inputStock?.location,
-                            version: inputStock?.version,
+                            quantity: _inputStock?.quantity,
+                            location: _inputStock?.location,
+                            version: _inputStock?.version,
                           );
                           updateStockRows();
                           setState(() {});
@@ -203,7 +185,7 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                     SizedBox(
                       width: 150,
                       child: TextField(
-                        controller: quantityController,
+                        controller: _quantityController,
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
                         ],
@@ -213,14 +195,14 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                           border: OutlineInputBorder(),
                         ),
                         onSubmitted: (number) {
-                          inputStock = Stock(
-                            part: inputStock?.part,
+                          _inputStock = Stock(
+                            part: _inputStock?.part,
                             quantity: int.parse(number),
-                            location: inputStock?.location,
-                            version: inputStock?.version,
+                            location: _inputStock?.location,
+                            version: _inputStock?.version,
                           );
                           updateStockRows();
-                          quantityController.clear();
+                          _quantityController.clear();
                           setState(() {});
                         },
                       )
@@ -234,11 +216,11 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                         );
 
                         if (newLocation != null) {
-                          inputStock = Stock(
-                            part: inputStock?.part,
-                            quantity: inputStock?.quantity,
+                          _inputStock = Stock(
+                            part: _inputStock?.part,
+                            quantity: _inputStock?.quantity,
                             location: newLocation,
-                            version: inputStock?.version,
+                            version: _inputStock?.version,
                           );
                           updateStockRows();
                           setState(() {});
@@ -257,8 +239,8 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        columns: columns,
-                        rows: inputStockRow,
+                        columns: _columns,
+                        rows: _inputStockRow,
                       ),
                     ),
                   ),
@@ -286,8 +268,8 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                           child: SizedBox(
                             width: 800,
                             child: PaginatedDataTable(
-                              key: dataTableKey,
-                              columns: columns,
+                              key: _dataTableKey,
+                              columns: _columns,
                               source: _dataSource,
                               rowsPerPage: 10,
                               showCheckboxColumn: true,
@@ -300,40 +282,45 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                              spacing: 5, 
-                              children: [
-                                DropdownMenu<Person>(
-                                  label: Text("System User"),
-                                  enableFilter: true,
-                                  menuHeight: 400,
-                                  width: 150,
-                                  initialSelection: personProvider.currentUser,
-                                  onSelected: (person) {
-                                    personProvider.currentUser = person;
-                                  },
-                                  dropdownMenuEntries:
-                                      personProvider.personsDropdown,
-                                ),
-                                EditButton(
-                                  onPressed: () async {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => UserManagementDialog(),
-                                    );
-                                  },
-                                ),
-                              ],
+                            spacing: 5, 
+                            children: [
+                              DropdownMenu<Person>(
+                                label: Text("System User"),
+                                enableFilter: true,
+                                menuHeight: 400,
+                                width: 150,
+                                initialSelection: personProvider.currentUser,
+                                onSelected: (person) {
+                                  personProvider.currentUser = person;
+                                },
+                                dropdownMenuEntries:
+                                    personProvider.personsDropdown,
+                              ),
+                              EditButton(
+                                onPressed: () async {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => UserManagementDialog(),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            width: 200,
+                            child: TextField(
+                              controller: _memoFieldController,
+                              maxLines: 3,
+                              maxLength: 150,
+                              decoration: InputDecoration(
+                                labelText: '재고 등록 메모 (선택)',
+                                border: OutlineInputBorder(),
+                              ),
                             ),
+                          ),
                           SaveAllButton(
                             onPressed: () async {
-                              if (stocks.isEmpty) {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) =>
-                                      ErrorDialog(message: '등록할 재고가 없습니다.'),
-                                );
-                                return;
-                              }
+                              if (_stocks.isEmpty) return;
 
                               if (personProvider.currentUser == null) {
                                 showDialog(
@@ -344,15 +331,15 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                                 return;
                               }
 
-                              final confirmed = await showDialog(
+                              final confirmed = await showDialog<bool>(
                                 context: context,
                                 builder: (context) =>
                                     ConfirmDialog(message: "전체등록 하시겠습니까?"),
                               );
+                              if (!context.mounted) return;
 
-                              if (confirmed) {
+                              if (confirmed == true) {
                                 final registeredStocks = await registerAllStocks();
-
                                 if (!context.mounted) return;
 
                                 if (registeredStocks != null && registeredStocks.isNotEmpty) {
@@ -360,8 +347,8 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                                   createStockHistories(registeredStocks);
 
                                   setState(() {
-                                    stocks.clear();
-                                    dataTableKey = UniqueKey();
+                                    _stocks.clear();
+                                    _dataTableKey = UniqueKey();
                                     refresh = true;
                                   });
 
@@ -383,15 +370,15 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                             },
                           ),
                           DeleteButton(onPressed: () {
-                            if (selectedStocks.isEmpty) {
+                            if (_selectedStocks.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text('삭제할 재고를 선택해주세요.')),
                                 );
                                 return;
                               }
                               setState(() {
-                                stocks.removeAll(selectedStocks);
-                                selectedStocks.clear();
+                                _stocks.removeAll(_selectedStocks);
+                                _selectedStocks.clear();
                               });
                           }),
                         ],

@@ -184,24 +184,8 @@ class _UserManagementDialogState extends State<UserManagementDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () async {
-            // if (_selectedPerson != null) {
-            //   Navigator.of(context).pop(_selectedPerson);
-            // }
-            // else {
-            //   showDialog(
-            //     context: context,
-            //     builder: (context) => ErrorDialog(
-            //       message: '위치를 선택해주세요.',
-            //     ),
-            //   );
-            // }
-          },
-          child: Text('확인'),
-        ),
-        TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text('취소'),
+          child: Text('닫기'),
         ),
       ],
     );
