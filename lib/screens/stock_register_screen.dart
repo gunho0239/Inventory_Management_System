@@ -291,17 +291,23 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                                 width: 150,
                                 initialSelection: personProvider.currentUser,
                                 onSelected: (person) {
-                                  personProvider.currentUser = person;
+                                  if (person != null) {
+                                    personProvider.currentUser = person;
+                                  }
                                 },
                                 dropdownMenuEntries:
                                     personProvider.personsDropdown,
                               ),
                               EditButton(
                                 onPressed: () async {
-                                  showDialog(
+                                  final refresh = await showDialog<bool>(
                                     context: context,
                                     builder: (context) => UserManagementDialog(),
                                   );
+
+                                  if (refresh == true) {
+                                    setState(() {});
+                                  }
                                 },
                               ),
                             ],

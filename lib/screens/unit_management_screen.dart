@@ -100,8 +100,10 @@ class _UnitManagementScreenState extends State<UnitManagementScreen> {
                             menuHeight: 400,
                             initialSelection: selectedUnit,
                             onSelected: (unit) {
-                              selectedUnit = unit!;
-                              setState(() {});
+                              if (unit != null) {
+                                selectedUnit = unit;
+                                setState(() {});
+                              }
                             },
                             dropdownMenuEntries: unitProvider.unitsDropdownWithAll,
                           ),

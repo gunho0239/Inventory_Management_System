@@ -102,9 +102,11 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
                           enableFilter: true,
                           menuHeight: 400,
                           onSelected: (section) {
-                            selectedSection = section!;
-                            getLocations();
-                            dataTableKey = UniqueKey();
+                            if (section != null) {
+                              selectedSection = section;
+                              getLocations();
+                              dataTableKey = UniqueKey();
+                            }
                           },
                           dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
                         ),

@@ -111,9 +111,11 @@ class _PartSelectDialogState extends State<PartSelectDialog> {
                   menuHeight: 400,
                   width: 180,
                   onSelected: (type) {
-                    selectedType = type!;
-                    getParts();
-                    dataTableKey = UniqueKey();
+                    if (type != null) {
+                      selectedType = type;
+                      getParts();
+                      dataTableKey = UniqueKey();
+                    }
                   },
                   dropdownMenuEntries:
                       typeProvider.typesDropdownWithAll,
@@ -124,9 +126,11 @@ class _PartSelectDialogState extends State<PartSelectDialog> {
                   menuHeight: 400,
                   width: 180,
                   onSelected: (maker) {
-                    selectedMaker = maker!;
-                    getParts();
-                    dataTableKey = UniqueKey();
+                    if (maker != null) {
+                      selectedMaker = maker;
+                      getParts();
+                      dataTableKey = UniqueKey();
+                    }
                   },
                   dropdownMenuEntries:
                       makerProvider.makersDropdownWithAll,

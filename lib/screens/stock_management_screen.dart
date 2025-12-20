@@ -72,6 +72,7 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
     sectionProvider.reloadSections();
 
     Provider.of<PersonProvider>(context, listen: false).reloadPersons();
+    getStocks();
   }
 
   void getStocks() async {
@@ -101,7 +102,9 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
     };
 
     selectedStock = null;
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   showEachDialog(BuildContext context, DialogType dialogType) async {
@@ -188,9 +191,11 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
                           menuHeight: 400,
                           width: 150,
                           onSelected: (type) {
-                            selectedType = type ?? typeProvider.allType;
-                            getStocks();
-                            dataTableKey = UniqueKey();
+                            if (type != null) {
+                              selectedType = type;
+                              getStocks();
+                              dataTableKey = UniqueKey();
+                            }
                           },
                           dropdownMenuEntries:
                               typeProvider.typesDropdownWithAll,
@@ -201,9 +206,11 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
                           menuHeight: 400,
                           width: 160,
                           onSelected: (maker) {
-                            selectedMaker = maker ?? makerProvider.allMaker;
-                            getStocks();
-                            dataTableKey = UniqueKey();
+                            if (maker != null) {
+                              selectedMaker = maker;
+                              getStocks();
+                              dataTableKey = UniqueKey();
+                            }
                           },
                           dropdownMenuEntries:
                               makerProvider.makersDropdownWithAll,
@@ -231,9 +238,11 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
                           menuHeight: 400,
                           width: 150,
                           onSelected: (section) {
-                            selectedSection = section ?? sectionProvider.allSection;
-                            dataTableKey = UniqueKey();
-                            getStocks();
+                            if (section != null) {
+                              selectedSection = section;
+                              dataTableKey = UniqueKey();
+                              getStocks();
+                            }
                           },
                           dropdownMenuEntries:
                               sectionProvider.sectionsDropdownWithAll,
@@ -293,17 +302,23 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
                                   width: 150,
                                   initialSelection: personProvider.currentUser,
                                   onSelected: (person) {
-                                    personProvider.currentUser = person;
+                                    if (person != null) {
+                                      personProvider.currentUser = person;
+                                    }
                                   },
                                   dropdownMenuEntries:
                                       personProvider.personsDropdown,
                                 ),
                                 EditButton(
                                   onPressed: () async {
-                                    showDialog(
+                                    final refresh = await showDialog<bool>(
                                       context: context,
                                       builder: (context) => UserManagementDialog(),
                                     );
+
+                                    if (refresh == true) {
+                                      setState(() {});
+                                    }
                                   },
                                 ),
                               ],

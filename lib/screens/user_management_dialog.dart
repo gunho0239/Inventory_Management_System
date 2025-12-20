@@ -17,6 +17,7 @@ class UserManagementDialog extends StatefulWidget {
 }
 
 class _UserManagementDialogState extends State<UserManagementDialog> {
+  bool _refresh = false;
   final TextEditingController _nameFieldController = TextEditingController();
   final FocusNode _nameFieldFocusNode = FocusNode();
 
@@ -56,6 +57,7 @@ class _UserManagementDialogState extends State<UserManagementDialog> {
       await personProvider.reloadPersons();
       _inquiredPersons = personProvider.persons;
       _dataTableKey = UniqueKey();
+      _refresh = true;
 
       setState(() {
         _nameFieldController.clear();
@@ -95,6 +97,7 @@ class _UserManagementDialogState extends State<UserManagementDialog> {
         _inquiredPersons = personProvider.persons;
         _dataTableKey = UniqueKey();
         _selectedPersons.clear();
+        _refresh = true;
 
         setState(() {});
       }
@@ -184,7 +187,7 @@ class _UserManagementDialogState extends State<UserManagementDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(context).pop(_refresh),
           child: Text('닫기'),
         ),
       ],

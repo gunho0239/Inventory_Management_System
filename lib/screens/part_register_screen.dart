@@ -200,7 +200,9 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                                 width: 180,
                                 initialSelection: selectedType,
                                 onSelected: (type) {
-                                  selectedType = type;
+                                  if (type != null) {
+                                    selectedType = type;
+                                  }
                                 },
                                 dropdownMenuEntries: typeProvider.typesDropdown,
                               ),
@@ -211,7 +213,9 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                                 width: 180,
                                 initialSelection: selectedMaker,
                                 onSelected: (maker) {
-                                  selectedMaker = maker;
+                                  if (maker != null) {
+                                    selectedMaker = maker;
+                                  }
                                 },
                                 dropdownMenuEntries: makerProvider.makersDropdown,
                               ),
@@ -222,7 +226,9 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                                 width: 180,
                                 initialSelection: selectedUnit,
                                 onSelected: (unit) {
-                                  selectedUnit = unit;
+                                  if (unit != null) {
+                                    selectedUnit = unit;
+                                  }
                                 },
                                 dropdownMenuEntries: unitProvider.unitsDropdown,
                               ),

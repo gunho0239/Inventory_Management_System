@@ -121,9 +121,11 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
                           menuHeight: 400,
                           width: 150,
                           onSelected: (type) {
-                            selectedType = type!;
-                            getParts();
-                            dataTableKey = UniqueKey();
+                            if (type != null) {
+                              selectedType = type;
+                              getParts();
+                              dataTableKey = UniqueKey();
+                            }
                           },
                           dropdownMenuEntries:
                               typeProvider.typesDropdownWithAll,
@@ -137,9 +139,11 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
                           menuHeight: 400,
                           width: 160,
                           onSelected: (maker) {
-                            selectedMaker = maker!;
-                            getParts();
-                            dataTableKey = UniqueKey();
+                            if (maker != null) {
+                              selectedMaker = maker;
+                              getParts();
+                              dataTableKey = UniqueKey();
+                            }
                           },
                           dropdownMenuEntries:
                               makerProvider.makersDropdownWithAll,

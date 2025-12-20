@@ -139,9 +139,11 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
                               menuHeight: 400,
                               initialSelection: selectedSection,
                               onSelected: (section) {
-                                setState(() {
-                                  selectedSection = section;
-                                });
+                                if (section != null) { 
+                                  setState(() {
+                                    selectedSection = section;
+                                  });
+                                }
                               },
                               dropdownMenuEntries: sectionProvider.sectionsDropdown,
                             ),

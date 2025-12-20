@@ -56,14 +56,6 @@ class _LocationSelectDialogState extends State<LocationSelectDialog> {
             ),
     };
 
-    // if (isAllSection) {
-    //   _inquiredLocations = await locationRepo.getAllLocations();
-    // } else {
-    //   _inquiredLocations = await locationRepo.getLocationsBySection(
-    //     _selectedSection.id!,
-    //   );
-    // }
-
     _selectedLocation = null;
     _dataTableKey = UniqueKey();
     setState(() {});
@@ -106,8 +98,10 @@ class _LocationSelectDialogState extends State<LocationSelectDialog> {
                   menuHeight: 400,
                   width: 150,
                   onSelected: (section) {
-                    _selectedSection = section!;
-                    getLocations();
+                    if (section != null) {
+                      _selectedSection = section;
+                      getLocations();
+                    }
                   },
                   dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
                 ),

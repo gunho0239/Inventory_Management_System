@@ -101,8 +101,10 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                             menuHeight: 400,
                             initialSelection: selectedType,
                             onSelected: (type) {
-                              selectedType = type!;
-                              setState(() {});
+                              if (type != null) {
+                                selectedType = type;
+                                setState(() {});
+                              }
                             },
                             dropdownMenuEntries: typeProvider.typesDropdownWithAll,
                           ),

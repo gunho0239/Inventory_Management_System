@@ -60,6 +60,9 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
     super.initState();
 
     final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+    if (categoryProvider.categories.isEmpty) {
+      _reloadCategories();
+    }
     selectedCategory = categoryProvider.allCategory;
 
     final now = DateTime.now();
@@ -68,10 +71,16 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
     _endDateFieldController.text = _dateFormat.format(_selectedEndDate!);
     _startDateFieldController.text = _dateFormat.format(_selectedStartDate!);
     
-    getHistories();
+    _getHistories();
   }
 
-  void getHistories() async {
+  _reloadCategories() async {
+    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+    await categoryProvider.reloadCategories();
+    setState(() {});
+  }
+
+  void _getHistories() async {
     StockHistoryRepository historyRepo = StockHistoryRepository();
     final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
 
@@ -137,13 +146,6 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
             return HistoryDetailsDialog(selectedHistory: stockHistory);
           },
         );
-        // setState(() {
-        //   if (selected) {
-        //     _selectedStockHistory = stockHistory;
-        //   } else {
-        //     _selectedStockHistory = null;
-        //   }
-        // });
       },
     );
 
@@ -188,7 +190,7 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
                                   _selectedEndDate = DateTime(_selectedStartDate!.year, _selectedStartDate!.month, _selectedStartDate!.day, 23, 59, 59);
                                   _endDateFieldController.text = _dateFormat.format(_selectedEndDate!);
                                 }
-                                getHistories();
+                                _getHistories();
                               }
                             },
                           ),
@@ -212,7 +214,7 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
                                   _selectedStartDate = DateTime(_selectedEndDate!.year, _selectedEndDate!.month, _selectedEndDate!.day, 0, 0, 0);
                                   _startDateFieldController.text = _dateFormat.format(_selectedStartDate!);
                                 }
-                                getHistories();
+                                _getHistories();
                               }
                             },
                           ),
@@ -223,8 +225,10 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
                           menuHeight: 400,
                           width: 150,
                           onSelected: (category) {
-                            selectedCategory = category ?? categoryProvider.allCategory;
-                            getHistories();
+                            if (category != null) {
+                              selectedCategory = category;
+                              _getHistories();
+                            }
                           },
                           dropdownMenuEntries:
                               categoryProvider.categoriesDropdownWithAll,
@@ -240,7 +244,7 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
                               border: OutlineInputBorder(),
                             ),
                             onSubmitted: (memo) {
-                              getHistories();
+                              _getHistories();
                               FocusScope.of(context).requestFocus(_memoFieldFocusNode);
                             },
                           ),
@@ -256,7 +260,7 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
                               border: OutlineInputBorder(),
                             ),
                             onSubmitted: (type) {
-                              getHistories();
+                              _getHistories();
                               FocusScope.of(context).requestFocus(_typeFieldFocusNode);
                             },
                           ),
@@ -272,7 +276,7 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
                               border: OutlineInputBorder(),
                             ),
                             onSubmitted: (spec) {
-                              getHistories();
+                              _getHistories();
                               FocusScope.of(context).requestFocus(_specFieldFocusNode);
                             },
                           ),
@@ -288,7 +292,7 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
                               border: OutlineInputBorder(),
                             ),
                             onSubmitted: (maker) {
-                              getHistories();
+                              _getHistories();
                               FocusScope.of(context).requestFocus(_makerFieldFocusNode);
                             },
                           ),

@@ -102,8 +102,10 @@ class _MakerManagementScreenState extends State<MakerManagementScreen> {
                                 menuHeight: 400,
                                 initialSelection: selectedMaker,
                                 onSelected: (maker) {
-                                  selectedMaker = maker!;
-                                  setState(() {});
+                                  if (maker != null) {
+                                    selectedMaker = maker;
+                                    setState(() {});
+                                  }
                                 },
                                 dropdownMenuEntries: makerProvider.makersDropdownWithAll,
                               ),

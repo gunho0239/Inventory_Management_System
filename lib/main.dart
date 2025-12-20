@@ -43,7 +43,7 @@ void main() {
             theme: ThemeData.light(), // 기본 라이트 테마
             darkTheme: ThemeData.dark(),
             themeMode: themeProvider.themeMode,
-            title: 'LSEng Inventory Management System',
+            title: 'LSENG Inventory Management System',
             home: const MainApp()
           );
         }
@@ -60,7 +60,8 @@ class MainApp extends StatefulWidget {
   State<MainApp> createState() => _MainAppState();
 }
 
-class _MainAppState extends State<MainApp> {
+class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
+  late AnimationController _rotationController;
   InventoryMenu selectedMenu = InventoryMenu.stockManagement;
 
   final Map<InventoryMenu, Widget> pages = {
@@ -82,7 +83,18 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     super.initState();
+    _rotationController = AnimationController(
+      duration: const Duration(seconds: 10),
+      vsync: this,
+    )..repeat(); // 무한 반복
+
     Provider.of<CategoryProvider>(context, listen: false).reloadCategories();
+  }
+
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -91,12 +103,42 @@ class _MainAppState extends State<MainApp> {
       body: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 200,
-            child: SideNavigationBar(
-              selectedMenu: selectedMenu,
-              onMenuSelect: onMenuSelect,
-            ),
+          Column(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  width: 200,
+                  child: SideNavigationBar(
+                    selectedMenu: selectedMenu,
+                    onMenuSelect: onMenuSelect,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: AnimatedBuilder(
+                  animation: _rotationController,
+                  builder: (context, child) {
+                    return Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.identity()
+                        ..setEntry(3, 2, 0.001) // 원근감 추가
+                        ..rotateY(_rotationController.value * 2 * 3.14159), // Y축 회전
+                      child: Image.asset(
+                        'lib/assets/logo.png',
+                        width: 150,
+                        height: 80,
+                        fit: BoxFit.contain,
+                      ),
+                    );
+                  }
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text("2025.08.25    leegunho", style: TextStyle(color: Colors.grey)),
+              ),
+            ],
           ),
           Expanded(
             child: Stack(

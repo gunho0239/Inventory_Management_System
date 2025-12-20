@@ -101,8 +101,10 @@ class _SectionManagementScreenState extends State<SectionManagementScreen> {
                             menuHeight: 400,
                             initialSelection: selectedSection,
                             onSelected: (section) {
-                              selectedSection = section!;
-                              setState(() {});
+                              if (section != null) {
+                                selectedSection = section;
+                                setState(() {});
+                              }
                             },
                             dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
                           ),
