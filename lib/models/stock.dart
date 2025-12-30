@@ -10,6 +10,22 @@ class Stock {
 
   Stock({this.id, this.part, this.quantity, this.location, this.version});
 
+  Stock copyWith({
+    int? id,
+    Part? part,
+    int? quantity,
+    Location? location,
+    int? version,
+  }) {
+    return Stock(
+      id: id ?? this.id,
+      part: part ?? this.part,
+      quantity: quantity ?? this.quantity,
+      location: location ?? this.location,
+      version: version ?? this.version,
+    );
+  }
+
   factory Stock.fromJson(Map<String, dynamic> json) =>
       Stock(
         id: json['id'],
@@ -27,17 +43,17 @@ class Stock {
         'version': version,
       };
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Stock &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          part == other.part &&
-          quantity == other.quantity &&
-          location == other.location &&
-          version == other.version;
+  // @override
+  // bool operator ==(Object other) =>
+  //     identical(this, other) ||
+  //     other is Stock &&
+  //         runtimeType == other.runtimeType &&
+  //         id == other.id &&
+  //         part == other.part &&
+  //         quantity == other.quantity &&
+  //         location == other.location &&
+  //         version == other.version;
 
-  @override
-  int get hashCode => id.hashCode ^ part.hashCode ^ quantity.hashCode ^ location.hashCode ^ version.hashCode;
+  // @override
+  // int get hashCode => id.hashCode ^ part.hashCode ^ quantity.hashCode ^ location.hashCode ^ version.hashCode;
 }

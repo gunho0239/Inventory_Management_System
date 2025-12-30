@@ -125,7 +125,7 @@ class _SectionRegisterScreenState extends State<SectionRegisterScreen> {
                                   key: dataTableKey,
                                   columns: columns,
                                   source: _dataSource,
-                                  rowsPerPage: 10,
+                                  rowsPerPage: 6,
                                   showCheckboxColumn: true,
                                 ),
                               ),

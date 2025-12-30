@@ -12,7 +12,9 @@ class LocationSection {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is LocationSection && runtimeType == other.runtimeType && id == other.id && section == other.section;
+      other is LocationSection && 
+      runtimeType == other.runtimeType && 
+      id == other.id && section == other.section;
 
   @override
   int get hashCode => Object.hash(id, section);

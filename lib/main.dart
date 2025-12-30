@@ -40,7 +40,12 @@ void main() {
               const Locale('ko', 'KR'),
               const Locale('en', 'US'),
             ],
-            theme: ThemeData.light(), // 기본 라이트 테마
+            scrollBehavior: MyMaterialScrollBehavior(),
+            theme: ThemeData.light().copyWith( // 기본 라이트 테마
+              scrollbarTheme: ScrollbarThemeData(
+                // thumbVisibility: WidgetStateProperty.all<bool>(true),
+              ),
+            ),
             darkTheme: ThemeData.dark(),
             themeMode: themeProvider.themeMode,
             title: 'LSENG Inventory Management System',
@@ -51,6 +56,20 @@ void main() {
     ),
   );
     
+}
+
+class MyMaterialScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) {
+    return Scrollbar(
+      controller: details.controller,
+      thumbVisibility: true,
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: child,
+      ),
+    );
+  }
 }
 
 class MainApp extends StatefulWidget {

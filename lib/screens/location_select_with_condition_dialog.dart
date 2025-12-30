@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:inventory_management/constants/columns.dart';
 import 'package:inventory_management/datatable_source/location_data.dart';
 import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/location.dart';
@@ -10,22 +11,23 @@ import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/icon_label.dart';
 import 'package:provider/provider.dart';
 
-class LocationSelectDialog extends StatefulWidget {
+class LocationSelectWithConditionDialog extends StatefulWidget {
+  final LocationSection? selectedSection;
 
-  const LocationSelectDialog({super.key});
+  const LocationSelectWithConditionDialog({super.key, this.selectedSection});
 
   @override
-  State<LocationSelectDialog> createState() => _LocationSelectDialogState();
+  State<LocationSelectWithConditionDialog> createState() => _LocationSelectWithConditionDialogState();
 }
 
-class _LocationSelectDialogState extends State<LocationSelectDialog> {
+class _LocationSelectWithConditionDialogState extends State<LocationSelectWithConditionDialog> {
   final TextEditingController _numberFieldController = TextEditingController();
   final FocusNode _numberFieldFocusNode = FocusNode();
   late LocationSection _selectedSection;
 
   final List<DataColumn> _columns = [
-    DataColumn(label: Text('구역')),
-    DataColumn(label: Text('번호')),
+    DataColumn(label: Text(section)),
+    DataColumn(label: Text(number)),
   ];
   late LocationDataSource _dataSource;
   Key _dataTableKey = UniqueKey();
@@ -36,8 +38,14 @@ class _LocationSelectDialogState extends State<LocationSelectDialog> {
   void initState() {
     super.initState();
     final sectionProvider = Provider.of<SectionProvider>(context, listen: false);
-    _selectedSection = sectionProvider.allSection;
+    
+    if (widget.selectedSection != null) {
+      _selectedSection = widget.selectedSection!;
+    } else {
+      _selectedSection = sectionProvider.allSection;
+    }
     sectionProvider.reloadSections();
+    getLocations();
   }
 
   void getLocations() async {

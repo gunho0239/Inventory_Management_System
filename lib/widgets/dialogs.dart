@@ -51,18 +51,64 @@ class ResultDialog extends StatelessWidget {
 
 class ErrorDialog extends StatelessWidget {
   final String message;
+  final TextStyle? style;
 
-  const ErrorDialog({super.key, required this.message});
+  const ErrorDialog({super.key, required this.message, this.style});
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('오류'),
-      content: Text(message),
+      content: Text(
+        message,
+        style: style,
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text('확인'),
+        ),
+      ],
+    );
+  }
+}
+
+class NumberInputDialog extends StatelessWidget {
+  final String title;
+  final String labelText;
+  final TextEditingController controller = TextEditingController();
+
+  NumberInputDialog({
+    super.key,
+    required this.title,
+    required this.labelText,
+  });
+
+  void _popWithValue(BuildContext context) {
+    Navigator.of(context).pop<int?>(int.tryParse(controller.text));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(title),
+      content: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+          labelText: labelText,
+          border: OutlineInputBorder(),
+        ),
+        onSubmitted: (_) => _popWithValue(context),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => _popWithValue(context),
+          child: Text('확인'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop<int?>(null),
+          child: Text('취소'),
         ),
       ],
     );

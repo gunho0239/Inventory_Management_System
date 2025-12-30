@@ -30,5 +30,5 @@ class Location {
           number == other.number;
 
   @override
-  int get hashCode => id.hashCode;
+  int get hashCode => id.hashCode ^ section.hashCode ^ number.hashCode;
 }

@@ -50,6 +50,8 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
     final makerProvider = Provider.of<MakerProvider>(context, listen: false);
     selectedMaker = makerProvider.allMaker;
     makerProvider.reloadMakers();
+
+    getParts();
   }
 
   void getParts() async {
@@ -187,20 +189,19 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Flexible(
-                        child: SizedBox(
-                          width: 900,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10.0,
-                            ),
-                            child: SingleChildScrollView(
-                              child: PaginatedDataTable(
-                                key: dataTableKey,
-                                columns: columns,
-                                source: _dataSource,
-                                rowsPerPage: 10,
-                                showCheckboxColumn: true,
-                              ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10.0,
+                          ),
+                          child: SingleChildScrollView(
+                            child: PaginatedDataTable(
+                              key: dataTableKey,
+                              columns: columns,
+                              source: _dataSource,
+                              rowsPerPage: 6,
+                              showCheckboxColumn: true,
+                              showEmptyRows: false,
+                              showFirstLastButtons: true,
                             ),
                           ),
                         ),

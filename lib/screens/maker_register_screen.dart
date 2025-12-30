@@ -125,7 +125,7 @@ class _MakerRegisterScreenState extends State<MakerRegisterScreen> {
                                   key: dataTableKey,
                                   columns: columns,
                                   source: _dataSource,
-                                  rowsPerPage: 10,
+                                  rowsPerPage: 6,
                                   showCheckboxColumn: true,
                                 ),
                               ),

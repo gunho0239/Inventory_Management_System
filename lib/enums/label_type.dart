@@ -9,4 +9,5 @@ enum LabelType {
   endNumber,
   category,
   memo,
+  quantity,
 }

@@ -53,9 +53,19 @@ class StockApi {
     return SingleRequestResult(success: responseBody["success"], errorMessage: responseBody["message"]);
   }
 
+  Future<BulkRequestResultWithIds> deleteStocks(List<Stock> stocks) async {
+    dynamic responseBody = await ApiClient.delete('${Endpoints.stocks}/bulk', stocks.map((stock) => stock.toJson()).toList());
+    return BulkRequestResultWithIds(successIds: List<int>.from(responseBody["successIds"]), failedIds: List<int>.from(responseBody["failedIds"]));
+  }
+
   Future<SingleRequestResult> updateStock(Stock stock) async {
     dynamic responseBody = await ApiClient.put('${Endpoints.stocks}/single', stock.toJson());
     return SingleRequestResult(success: responseBody["success"], errorMessage: responseBody["message"]);
+  }
+
+  Future<BulkRequestResultWithIds> updateStocks(List<Stock> stocks) async {
+    dynamic responseBody = await ApiClient.put('${Endpoints.stocks}/bulk', stocks.map((stock) => stock.toJson()).toList());
+    return BulkRequestResultWithIds(successIds: List<int>.from(responseBody["successIds"]), failedIds: List<int>.from(responseBody["failedIds"]));
   }
 
   // Future<SingleRequestResult> updateStockQuantity(Stock stock) async {
@@ -66,5 +76,10 @@ class StockApi {
   Future<SingleRequestResult> updateStockLocation(Stock stock) async {
     dynamic responseBody = await ApiClient.put('${Endpoints.stocks}/location', stock.toJson());
     return SingleRequestResult(success: responseBody["success"], errorMessage: responseBody["message"]);
+  }
+
+  Future<BulkRequestResultWithIds> updateStockLocations(List<Stock> stocks) async {
+    dynamic responseBody = await ApiClient.put('${Endpoints.stocks}/locations', stocks.map((stock) => stock.toJson()).toList());
+    return BulkRequestResultWithIds(successIds: List<int>.from(responseBody["successIds"]), failedIds: List<int>.from(responseBody["failedIds"]));
   }
 }

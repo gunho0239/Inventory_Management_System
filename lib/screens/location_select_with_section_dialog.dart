@@ -10,15 +10,16 @@ import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/icon_label.dart';
 import 'package:provider/provider.dart';
 
-class LocationSelectDialog extends StatefulWidget {
+class LocationSelectWithSectionDialog extends StatefulWidget {
+  final LocationSection section;
 
-  const LocationSelectDialog({super.key});
+  const LocationSelectWithSectionDialog({super.key, required this.section});
 
   @override
-  State<LocationSelectDialog> createState() => _LocationSelectDialogState();
+  State<LocationSelectWithSectionDialog> createState() => _LocationSelectWithSectionDialogState();
 }
 
-class _LocationSelectDialogState extends State<LocationSelectDialog> {
+class _LocationSelectWithSectionDialogState extends State<LocationSelectWithSectionDialog> {
   final TextEditingController _numberFieldController = TextEditingController();
   final FocusNode _numberFieldFocusNode = FocusNode();
   late LocationSection _selectedSection;
@@ -35,9 +36,8 @@ class _LocationSelectDialogState extends State<LocationSelectDialog> {
   @override
   void initState() {
     super.initState();
-    final sectionProvider = Provider.of<SectionProvider>(context, listen: false);
-    _selectedSection = sectionProvider.allSection;
-    sectionProvider.reloadSections();
+    _selectedSection = widget.section;
+    getLocations();
   }
 
   void getLocations() async {
@@ -64,8 +64,6 @@ class _LocationSelectDialogState extends State<LocationSelectDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final sectionProvider = Provider.of<SectionProvider>(context);
-
     _dataSource = LocationDataSource(
       locations: _inquiredLocations,
       selectedLocations: (_selectedLocation == null) ? {} : {_selectedLocation!},
@@ -88,43 +86,24 @@ class _LocationSelectDialogState extends State<LocationSelectDialog> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 10,
-              children: [
-                DropdownMenu<LocationSection>(
-                  label: IconLabel(labelType: LabelType.section),
-                  enableFilter: true,
-                  menuHeight: 400,
-                  width: 150,
-                  onSelected: (section) {
-                    if (section != null) {
-                      _selectedSection = section;
-                      getLocations();
-                    }
-                  },
-                  dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
+            child: SizedBox(
+              width: 150,
+              child: TextField(
+                controller: _numberFieldController,
+                focusNode: _numberFieldFocusNode,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                decoration: InputDecoration(
+                  label: IconLabel(labelType: LabelType.number),
+                  hintText: "입력 후 엔터",
+                  border: OutlineInputBorder(),
                 ),
-                SizedBox(
-                  width: 150,
-                  child: TextField(
-                    controller: _numberFieldController,
-                    focusNode: _numberFieldFocusNode,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
-                    decoration: InputDecoration(
-                      label: IconLabel(labelType: LabelType.number),
-                      hintText: "입력 후 엔터",
-                      border: OutlineInputBorder(),
-                    ),
-                    onSubmitted: (locationNumber) {
-                      getLocations();
-                      FocusScope.of(context).requestFocus(_numberFieldFocusNode);
-                    },
-                  ),
-                ),
-              ],
+                onSubmitted: (locationNumber) {
+                  getLocations();
+                  FocusScope.of(context).requestFocus(_numberFieldFocusNode);
+                },
+              ),
             ),
           ),
           Expanded(

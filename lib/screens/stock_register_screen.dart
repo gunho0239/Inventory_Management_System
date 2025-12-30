@@ -4,23 +4,32 @@ import 'package:inventory_management/constants/columns.dart';
 import 'package:inventory_management/datatable_source/stock_data.dart';
 import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/models/location.dart';
+import 'package:inventory_management/models/location_section.dart';
 import 'package:inventory_management/models/part.dart';
+import 'package:inventory_management/models/part_maker.dart';
+import 'package:inventory_management/models/part_type.dart';
 import 'package:inventory_management/models/person.dart';
 import 'package:inventory_management/models/stock.dart';
 import 'package:inventory_management/models/stock_history.dart';
 import 'package:inventory_management/models/stock_history_category.dart';
 import 'package:inventory_management/providers/category_provider.dart';
+import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/providers/person_provider.dart';
+import 'package:inventory_management/providers/section_provider.dart';
+import 'package:inventory_management/providers/type_provider.dart';
 import 'package:inventory_management/repository/stock_history_repository.dart';
 import 'package:inventory_management/repository/stock_repository.dart';
 import 'package:inventory_management/screens/location_select_dialog.dart';
-import 'package:inventory_management/screens/part_select_dialog.dart';
+import 'package:inventory_management/screens/location_select_with_condition_dialog.dart';
+import 'package:inventory_management/screens/part_select_with_condition_dialog.dart';
 import 'package:inventory_management/screens/user_management_dialog.dart';
-import 'package:inventory_management/style/style.dart';
 import 'package:inventory_management/widgets/buttons.dart';
+import 'package:inventory_management/widgets/icon_label.dart';
 import 'package:inventory_management/widgets/title.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:provider/provider.dart';
+
+import '../enums/label_type.dart';
 
 class StockRegisterScreen extends StatefulWidget {
   const StockRegisterScreen({super.key});
@@ -32,28 +41,35 @@ class StockRegisterScreen extends StatefulWidget {
 class _StockRegisterScreenState extends State<StockRegisterScreen> {
   bool refresh = false;
 
+  final TextEditingController _typeFieldController = TextEditingController();
+  final TextEditingController _makerFieldController = TextEditingController();
+  final TextEditingController _specFieldController = TextEditingController();
+  final TextEditingController _unitFieldController = TextEditingController();
+  final TextEditingController _quantityFieldController = TextEditingController();
+  final TextEditingController _sectionFieldController = TextEditingController();
+  final TextEditingController _numberFieldController = TextEditingController();
   final TextEditingController _memoFieldController = TextEditingController();
-  final TextEditingController _quantityController = TextEditingController();
 
   final List<DataColumn> _columns = [
     DataColumn(label: Text(type)),
     DataColumn(label: Text(specification)),
     DataColumn(label: Text(maker)),
-    DataColumn(label: Text(unit)),
     DataColumn(label: Text(quantity)),
-    DataColumn(label: Text(section)),
-    DataColumn(label: Text(number)),
+    DataColumn(label: Text(location)),
   ];
-  Stock? _inputStock;
-  List<DataRow> _inputStockRow = [];
+  Stock? _newStock;
   late StockDataSource _dataSource;
   Key _dataTableKey = UniqueKey();
-  final Set<Stock> _stocks = {};
-  final Set<Stock> _selectedStocks = {};
+  final List<Stock> _addedStocks = [];
+  final List<Stock> _selectedStocks = [];
 
   void addStock() {
-    if (_inputStock != null && _inputStock?.part != null && _inputStock?.quantity != null && _inputStock?.location != null) {
-      _stocks.add(_inputStock!);
+    if (_newStock != null && _newStock?.part != null && _newStock?.location != null && _quantityFieldController.text.isNotEmpty) {
+      _newStock = _newStock!.copyWith(
+        quantity: int.tryParse(_quantityFieldController.text),
+      );
+      _addedStocks.add(_newStock!);
+      _dataSource.updateData(_addedStocks);
     } 
     else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -65,9 +81,9 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
   }
 
   Future<List<Stock>?> registerAllStocks() async {
-    if (_stocks.isEmpty) return null;
+    if (_addedStocks.isEmpty) return null;
 
-    List<Stock> stockList = _stocks.toList();
+    List<Stock> stockList = _addedStocks;
 
     List<Stock> registeredStocks = await StockRepository()
         .addStocks(stockList);
@@ -76,15 +92,13 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
   }
 
   Future<void> createStockHistories(List<Stock> registeredStocks) async {
-    final stockHistoryRepo = StockHistoryRepository();
-
     final currentUser = Provider.of<PersonProvider>(context, listen: false).currentUser;
     final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
     final category = categoryProvider.getCategory(StockHistoryCategoryType.register);
     final memo = _memoFieldController.text.trim();
     
     final stockHistories = registeredStocks.map((stock) {
-      final stockLocation = '${stock.location?.section.section ?? ""} ${stock.location?.number ?? ""}';
+      final stockLocation = '${stock.location?.section.section ?? ""}-${stock.location?.number ?? ""}';
 
       return StockHistory(
         category: category,
@@ -101,49 +115,119 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
       );
     }).toList();
 
+    final stockHistoryRepo = StockHistoryRepository();
     stockHistoryRepo.addHistories(stockHistories);
   }
 
-  void updateStockRows() {
-    _inputStockRow = [
-      DataRow(cells: [
-        DataCell(Text(_inputStock?.part?.type.type ?? "")),
-        DataCell(Text(_inputStock?.part?.specification ?? "")),
-        DataCell(Text(_inputStock?.part?.maker.maker ?? "")),
-        DataCell(Text(_inputStock?.part?.unit.unit ?? "")),
-        DataCell(Text(_inputStock?.quantity?.toString() ?? "")),
-        DataCell(Text(_inputStock?.location?.section.section ?? "")),
-        DataCell(Text(_inputStock?.location?.number.toString() ?? "")),
-      ])
-    ];
+  void showPartDialog(PartType? selectedType, PartMaker? selectedMaker, String? specFilter) async {
+    final newPart = await showDialog<Part>(
+      context: context,
+      builder: (context) => PartSelectWithConditionDialog(
+        selectedType: selectedType,
+        selectedMaker: selectedMaker,
+        specFilter: specFilter,
+      ),
+    );
+
+    if (newPart != null) {
+      _newStock = Stock(
+        part: newPart,
+        quantity: _newStock?.quantity,
+        location: _newStock?.location,
+        version: _newStock?.version,
+      );
+
+      setState(() {
+        _typeFieldController.text = newPart.type.type ?? "";
+        _makerFieldController.text = newPart.maker.maker ?? "";
+        _specFieldController.text = newPart.specification;
+        _unitFieldController.text = newPart.unit.unit ?? "";
+      });
+    }
+  }
+
+  void showLocationDialog(LocationSection? selectedSection) async {
+    final newLocation = await showDialog<Location>(
+      context: context,
+      builder: (context) => LocationSelectWithConditionDialog(selectedSection: selectedSection),
+    );
+
+    if (newLocation != null) {
+      _newStock = Stock(
+        part: _newStock?.part,
+        quantity: _newStock?.quantity,
+        location: newLocation,
+        version: _newStock?.version,
+      );
+
+      setState(() {
+        _sectionFieldController.text = newLocation.section.section ?? "";
+        _numberFieldController.text = newLocation.number.toString();
+      });
+    }
   }
 
   @override
   void initState() {
     super.initState();
+    final typeProvider = Provider.of<TypeProvider>(context, listen: false);
+    typeProvider.reloadTypes();
+
+    final makerProvider = Provider.of<MakerProvider>(context, listen: false);
+    makerProvider.reloadMakers();
+
+    final sectionProvider = Provider.of<SectionProvider>(context, listen: false);
+    sectionProvider.reloadSections();
 
     final personProvider = Provider.of<PersonProvider>(context, listen: false);
     personProvider.reloadPersons();
+
+    _dataSource = StockDataSource(
+      stocks: _addedStocks,
+      selectedStocks: _selectedStocks,
+      onSelectChanged: (stock, selected) {
+        if (selected) {
+          _selectedStocks.add(stock);
+        } else {
+          _selectedStocks.remove(stock);
+        }
+      },
+      onQuantityTapped: () async {
+        int? quantity = await showDialog<int>(
+          context: context,
+          builder: (context) => NumberInputDialog(
+            title: "수량 변경",
+            labelText: "수량",
+          ),
+        );
+
+        return quantity;
+      },
+      onLocationTapped: () async {
+        final selectedLocation = await showDialog<Location>(
+          context: context,
+          builder: (context) => LocationSelectDialog(),
+        );
+
+        return selectedLocation;
+      }
+    );
   }
 
 
   @override
   Widget build(BuildContext context) {
+    final typeProvider = Provider.of<TypeProvider>(context);
+    final makerProvider = Provider.of<MakerProvider>(context);
+    final sectionProvider = Provider.of<SectionProvider>(context);
     final personProvider = Provider.of<PersonProvider>(context, listen: false);
 
-    _dataSource = StockDataSource(
-      stocks: _stocks.toList(),
-      selectedStocks: _selectedStocks,
-      onSelectChanged: (stock, selected) {
-        setState(() {
-          if (selected) {
-            _selectedStocks.add(stock);
-          } else {
-            _selectedStocks.remove(stock);
-          }
-        });
-      },
-    );
+    _typeFieldController.text = _newStock?.part?.type.type ?? "";
+    _makerFieldController.text = _newStock?.part?.maker.maker ?? "";
+    _specFieldController.text = _newStock?.part?.specification ?? "";
+    _unitFieldController.text = _newStock?.part?.unit.unit ?? "";
+    _sectionFieldController.text = _newStock?.location?.section.section ?? "";
+    _numberFieldController.text = _newStock?.location?.number.toString() ?? "";
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,103 +237,110 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10.0,
-                  vertical: 5.0,
-                ),
-                child: Row(
-                  spacing: 20,
-                  children: [
-                    ElevatedButton(
-                      style: AppButtonStyle.newPage,
-                      onPressed: () async {
-                        final newPart = await showDialog<Part>(
-                          context: context,
-                          builder: (context) => PartSelectDialog(),
-                        );
-
-                        if (newPart != null) {
-                          _inputStock = Stock(
-                            part: newPart,
-                            quantity: _inputStock?.quantity,
-                            location: _inputStock?.location,
-                            version: _inputStock?.version,
-                          );
-                          updateStockRows();
-                          setState(() {});
-                        }
-                      },
-                      child: Text('부품선택', style: TextStyle(fontSize: 18)),
-                    ),
-                    SizedBox(
-                      width: 150,
-                      child: TextField(
-                        controller: _quantityController,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        decoration: InputDecoration(
-                          labelText: '수량',
-                          hintText: '입력 후 엔터',
-                          border: OutlineInputBorder(),
-                        ),
-                        onSubmitted: (number) {
-                          _inputStock = Stock(
-                            part: _inputStock?.part,
-                            quantity: int.parse(number),
-                            location: _inputStock?.location,
-                            version: _inputStock?.version,
-                          );
-                          updateStockRows();
-                          _quantityController.clear();
-                          setState(() {});
-                        },
-                      )
-                    ),
-                    ElevatedButton(
-                      style: AppButtonStyle.newPage,
-                      onPressed: () async {
-                        final newLocation = await showDialog<Location>(
-                          context: context,
-                          builder: (context) => LocationSelectDialog(),
-                        );
-
-                        if (newLocation != null) {
-                          _inputStock = Stock(
-                            part: _inputStock?.part,
-                            quantity: _inputStock?.quantity,
-                            location: newLocation,
-                            version: _inputStock?.version,
-                          );
-                          updateStockRows();
-                          setState(() {});
-                        }
-                        
-                      },
-                      child: Text('위치선택', style: TextStyle(fontSize: 18)),
-                    ),
-                  ],
-                ),
-              ),
               Row(
-                spacing: 20,
                 children: [
-                  Flexible(
+                  Expanded(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        columns: _columns,
-                        rows: _inputStockRow,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 5.0),
+                        child: Row(
+                          spacing: 5,
+                          children: [
+                            DropdownMenu<PartType>(
+                              controller: _typeFieldController,
+                              label: IconLabel(labelType: LabelType.type),
+                              enableFilter: true,
+                              menuHeight: 400,
+                              width: 200,
+                              onSelected: (type) {
+                                if (type != null) {
+                                  showPartDialog(type, null, null);
+                                }
+                              },
+                              dropdownMenuEntries:
+                                  typeProvider.typesDropdownWithAll,
+                            ),
+                            DropdownMenu<PartMaker>(
+                              controller: _makerFieldController,
+                              label: IconLabel(labelType: LabelType.maker),
+                              enableFilter: true,
+                              menuHeight: 400,
+                              width: 200,
+                              onSelected: (maker) {
+                                if (maker != null) {
+                                  showPartDialog(null, maker, null);
+                                }
+                              },
+                              dropdownMenuEntries:
+                                  makerProvider.makersDropdownWithAll,
+                            ),
+                            SizedBox(
+                              width: 200,
+                              child: TextField(
+                                controller: _specFieldController,
+                                decoration: InputDecoration(
+                                  label: IconLabel(labelType: LabelType.specification),
+                                  hintText: "입력 후 엔터",
+                                  border: OutlineInputBorder(),
+                                ),
+                                onSubmitted: (spec) {
+                                  showPartDialog(null, null, spec.trim());
+                                },
+                              ),
+                            ),
+                            SizedBox(
+                              width: 130,
+                              child: TextField(
+                                controller: _quantityFieldController,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                decoration: InputDecoration(
+                                  label: IconLabel(labelType: LabelType.quantity),
+                                  border: OutlineInputBorder(),
+                                  suffixText: _newStock?.part?.unit.unit ?? "",
+                                ),
+                              ),
+                            ),
+                            DropdownMenu<LocationSection>(
+                              controller: _sectionFieldController,
+                              label: IconLabel(labelType: LabelType.section),
+                              enableFilter: true,
+                              menuHeight: 400,
+                              width: 150,
+                              onSelected: (section) {
+                                if (section != null) {
+                                  showLocationDialog(section);
+                                }
+                              },
+                              dropdownMenuEntries:
+                                  sectionProvider.sectionsDropdownWithAll,
+                            ),
+                            SizedBox(
+                              width: 100,
+                              child: TextField(
+                                controller: _numberFieldController,
+                                readOnly: true,
+                                decoration: InputDecoration(
+                                  label: IconLabel(labelType: LabelType.number),
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                  ElevatedButton(
-                    child: Icon(Icons.add, size: 30),
-                    onPressed: () {
-                      addStock();
-                      setState(() {});
-                    },
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                    child: ElevatedButton(
+                      child: Icon(Icons.add, size: 30),
+                      onPressed: () {
+                        addStock();
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -265,15 +356,15 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                     children: [
                       Flexible(
                         child: SingleChildScrollView(
-                          child: SizedBox(
-                            width: 800,
-                            child: PaginatedDataTable(
-                              key: _dataTableKey,
-                              columns: _columns,
-                              source: _dataSource,
-                              rowsPerPage: 10,
-                              showCheckboxColumn: true,
-                            ),
+                          scrollDirection: Axis.vertical,
+                          child: PaginatedDataTable(
+                            key: _dataTableKey,
+                            columns: _columns,
+                            source: _dataSource,
+                            rowsPerPage: 6,
+                            showCheckboxColumn: true,
+                            showEmptyRows: false,
+                            showFirstLastButtons: true,
                           ),
                         ),
                       ),
@@ -326,7 +417,7 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                           ),
                           SaveAllButton(
                             onPressed: () async {
-                              if (_stocks.isEmpty) return;
+                              if (_addedStocks.isEmpty) return;
 
                               if (personProvider.currentUser == null) {
                                 showDialog(
@@ -353,7 +444,7 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                                   createStockHistories(registeredStocks);
 
                                   setState(() {
-                                    _stocks.clear();
+                                    _addedStocks.clear();
                                     _dataTableKey = UniqueKey();
                                     refresh = true;
                                   });
@@ -377,15 +468,15 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                           ),
                           DeleteButton(onPressed: () {
                             if (_selectedStocks.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('삭제할 재고를 선택해주세요.')),
-                                );
-                                return;
-                              }
-                              setState(() {
-                                _stocks.removeAll(_selectedStocks);
-                                _selectedStocks.clear();
-                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('삭제할 재고를 선택해주세요.')),
+                              );
+                              return;
+                            }
+                              
+                            _addedStocks.removeWhere((stock) => _selectedStocks.contains(stock));
+                            _selectedStocks.clear();
+                            _dataSource.updateSelected();
                           }),
                         ],
                       ),

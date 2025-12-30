@@ -257,21 +257,16 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                             ],
                           ),
                         ),
-                        Spacer(flex: 1,),
                         Flexible(
-                          flex: 30,
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20.0),
                             child: SingleChildScrollView(
-                              child: SizedBox(
-                                width: 700,
-                                child: PaginatedDataTable(
-                                  key: dataTableKey,
-                                  columns: columns,
-                                  source: _dataSource,
-                                  rowsPerPage: 10,
-                                  showCheckboxColumn: true,
-                                ),
+                              child: PaginatedDataTable(
+                                key: dataTableKey,
+                                columns: columns,
+                                source: _dataSource,
+                                rowsPerPage: 6,
+                                showCheckboxColumn: true,
                               ),
                             ),
                           ),

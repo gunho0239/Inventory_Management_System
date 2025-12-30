@@ -30,9 +30,12 @@ class StockHistoryDataSource extends DataTableSource {
         DataCell(Text(stockHistory.type)),
         DataCell(Text(stockHistory.specification)),
         DataCell(Text(stockHistory.maker)),
-        DataCell(Text(stockHistory.unit)),
-        DataCell(Text(stockHistory.formattedQuantity)),
-        DataCell(Text(stockHistory.formattedLocation)),
+        DataCell(Align(
+          alignment: Alignment.centerRight,
+          child: Text("${stockHistory.formattedQuantity} / ${stockHistory.unit}"))),
+        DataCell(Align(
+          alignment: Alignment.center,
+          child: Text(stockHistory.formattedLocation))),
         DataCell(Text(stockHistory.person)),
       ],
     );

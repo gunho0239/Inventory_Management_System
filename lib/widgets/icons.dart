@@ -9,6 +9,7 @@ class MenuIcons {
   static const IconData maker = Icons.factory;
   static const IconData makerOutlined = Icons.factory_outlined;
   static const IconData unit = Icons.pallet;
+  static const IconData quantity = Icons.layers;
   static const IconData location = Icons.location_on;
   static const IconData section = Icons.shelves;
   static const IconData number = Icons.onetwothree;

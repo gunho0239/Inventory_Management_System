@@ -121,7 +121,7 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                                   key: dataTableKey,
                                   columns: columns,
                                   source: _dataSource,
-                                  rowsPerPage: 10,
+                                  rowsPerPage: 6,
                                   showCheckboxColumn: true,
                                 ),
                               ),

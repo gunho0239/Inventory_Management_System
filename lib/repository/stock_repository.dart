@@ -13,7 +13,10 @@ class StockRepository {
   Future<Stock> addStock(Stock stock) => _api.createStock(stock);
   Future<List<Stock>> addStocks(List<Stock> stocks) => _api.createStocks(stocks);
   Future<SingleRequestResult> removeStock(Stock stock) => _api.deleteStock(stock);
+  Future<BulkRequestResultWithIds> removeStocks(List<Stock> stocks) => _api.deleteStocks(stocks);
   Future<SingleRequestResult> updateStock(Stock stock) => _api.updateStock(stock);
+  Future<BulkRequestResultWithIds> updateStocks(List<Stock> stocks) => _api.updateStocks(stocks);
   // Future<SingleRequestResult> updateStockQuantity(Stock stock) => _api.updateStockQuantity(stock);
   Future<SingleRequestResult> updateStockLocation(Stock stock) => _api.updateStockLocation(stock);
+  Future<BulkRequestResultWithIds> updateStockLocations(List<Stock> stocks) => _api.updateStockLocations(stocks);
 }

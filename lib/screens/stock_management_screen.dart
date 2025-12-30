@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventory_management/datatable_source/stock_data.dart';
 import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/enums/label_type.dart';
+import 'package:inventory_management/constants/columns.dart';
 import 'package:inventory_management/models/location_section.dart';
 import 'package:inventory_management/models/part_maker.dart';
 import 'package:inventory_management/models/part_type.dart';
@@ -43,18 +44,17 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
   final FocusNode _numberFieldFocusNode = FocusNode();
 
   final List<DataColumn> columns = [
-    DataColumn(label: Text('품명')),
-    DataColumn(label: Text('규격')),
-    DataColumn(label: Text('제조사')),
-    DataColumn(label: Text('단위')),
-    DataColumn(label: Text('수량')),
-    DataColumn(label: Text('구역')),
-    DataColumn(label: Text('번호')),
+    DataColumn(label: Text(type)),
+    DataColumn(label: Text(specification)),
+    DataColumn(label: Text(maker)),
+    DataColumn(label: Text(quantity)),
+    DataColumn(label: Text(location)),
   ];
   late StockDataSource _dataSource;
   Key dataTableKey = UniqueKey();
-  List<Stock> inquiredStocks = [];
+  List<Stock> _inquiredStocks = [];
   Stock? selectedStock;
+  List<Stock> selectedStocks = [];
 
   @override
   void initState() {
@@ -72,6 +72,19 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
     sectionProvider.reloadSections();
 
     Provider.of<PersonProvider>(context, listen: false).reloadPersons();
+
+    _dataSource = StockDataSource(
+      stocks: _inquiredStocks,
+      selectedStocks: selectedStocks,
+      onSelectChanged: (stock, selected) {
+        if (selected) {
+          selectedStocks.add(stock);
+        } else {
+          selectedStocks.remove(stock);
+        }
+      },
+    );
+    
     getStocks();
   }
 
@@ -87,7 +100,7 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
     final specText = specFieldController.text.trim();
     final numberText = numberFieldController.text.trim();
     
-    inquiredStocks = await switch ((isAllType, isAllMaker, specText.isEmpty, isAllSection, numberText.isEmpty)) {
+    _inquiredStocks = await switch ((isAllType, isAllMaker, specText.isEmpty, isAllSection, numberText.isEmpty)) {
       (true, true, true, true, true) => stockRepo.getAllStocks(),
       (false, true, true, true, true) => stockRepo.getStocksByType(selectedType.id!),
       (true, false, true, true, true) => stockRepo.getStocksByMaker(selectedMaker.id!),
@@ -101,32 +114,28 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
             ),
     };
 
-    selectedStock = null;
-    if (mounted) {
-      setState(() {});
-    }
+    selectedStocks.clear();
+    _dataSource.updateData(_inquiredStocks);
   }
 
   showEachDialog(BuildContext context, DialogType dialogType) async {
     final personProvider = Provider.of<PersonProvider>(context, listen: false);
 
-    if (selectedStock == null) {
+    if (selectedStocks.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('재고를 선택해주세요.')),
       );
     }
     else if (personProvider.currentUser == null) {
-      showDialog(
-        context: context,
-        builder: (context) =>
-            ErrorDialog(message: '시스템 사용자를 선택해주세요.'),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('시스템 사용자를 선택해주세요.')),
       );
     }
     else {
       Widget dialog = switch (dialogType) {
-        DialogType.release => ReleaseDialog(selectedStock: selectedStock!),
-        DialogType.quantityChange => QuantityChangeDialog(selectedStock: selectedStock!),
-        DialogType.locationChange => LocationChangeDialog(selectedStock: selectedStock!),
+        DialogType.release => ReleaseDialog(selectedStocks: selectedStocks.toList()),
+        DialogType.quantityChange => QuantityChangeDialog(selectedStocks: selectedStocks.toList()),
+        DialogType.locationChange => LocationChangeDialog(selectedStocks: selectedStocks.toList()),
       };
 
       final refresh = await showDialog<bool>(
@@ -150,19 +159,6 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
     final sectionProvider = Provider.of<SectionProvider>(context);
     final personProvider = Provider.of<PersonProvider>(context);
 
-    _dataSource = StockDataSource(
-      stocks: inquiredStocks,
-      selectedStocks: (selectedStock == null) ? {} : {selectedStock!},
-      onSelectChanged: (stock, selected) {
-        setState(() {
-          if (selected) {
-            selectedStock = stock;
-          } else {
-            selectedStock = null;
-          }
-        });
-      },
-    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,15 +270,15 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
                     children: [
                       Flexible(
                         child: SingleChildScrollView(
-                          child: SizedBox(
-                            width: 900,
-                            child: PaginatedDataTable(
-                              key: dataTableKey,
-                              columns: columns,
-                              source: _dataSource,
-                              rowsPerPage: 10,
-                              showCheckboxColumn: true,
-                            ),
+                          scrollDirection: Axis.vertical,
+                          child: PaginatedDataTable(
+                            key: dataTableKey,
+                            columns: columns,
+                            source: _dataSource,
+                            rowsPerPage: 6,
+                            showCheckboxColumn: true,
+                            showFirstLastButtons: true,
+                            showEmptyRows: false,
                           ),
                         ),
                       ),
@@ -315,7 +311,7 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
                                       context: context,
                                       builder: (context) => UserManagementDialog(),
                                     );
-
+                      
                                     if (refresh == true) {
                                       setState(() {});
                                     }

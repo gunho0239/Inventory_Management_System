@@ -40,26 +40,6 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
     final sectionProvider = Provider.of<SectionProvider>(context, listen: false);
     selectedSection = sectionProvider.allSection;
     sectionProvider.reloadSections();
-  }
-
-  void getLocations() async {
-    LocationRepository locationRepo = LocationRepository();
-
-    if (selectedSection == Provider.of<SectionProvider>(context, listen: false).allSection) {
-      inquiredLocations = await locationRepo.getAllLocations();
-    } else {
-      inquiredLocations = await locationRepo.getLocationsBySection(
-        selectedSection.id!,
-      );
-    }
-
-    selectedLocations.clear();
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final sectionProvider = Provider.of<SectionProvider>(context);
 
     _dataSource = LocationDataSource(
       locations: inquiredLocations,
@@ -74,6 +54,29 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
         });
       },
     );
+
+    getLocations();
+  }
+
+  void getLocations() async {
+    LocationRepository locationRepo = LocationRepository();
+
+    if (selectedSection == Provider.of<SectionProvider>(context, listen: false).allSection) {
+      inquiredLocations = await locationRepo.getAllLocations();
+    } else {
+      inquiredLocations = await locationRepo.getLocationsBySection(
+        selectedSection.id!,
+      );
+    }
+
+    selectedLocations.clear();
+    _dataSource.updateData(inquiredLocations);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final sectionProvider = Provider.of<SectionProvider>(context);
+
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,7 +149,7 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
                                 key: dataTableKey,
                                 columns: columns,
                                 source: _dataSource,
-                                rowsPerPage: 10,
+                                rowsPerPage: 6,
                                 showCheckboxColumn: true,
                               ),
                             ),

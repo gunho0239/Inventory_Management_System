@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:inventory_management/constants/columns.dart';
 import 'package:inventory_management/datatable_source/stock_history_data.dart';
 import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/enums/label_type.dart';
@@ -40,16 +41,15 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
   final FocusNode _memoFieldFocusNode = FocusNode();
 
   final List<DataColumn> _columns = [
-    DataColumn(label: Text('일시')),
-    DataColumn(label: Text('구분')),
-    DataColumn(label: Text('메모')),
-    DataColumn(label: Text('품명')),
-    DataColumn(label: Text('규격')),
-    DataColumn(label: Text('제조사')),
-    DataColumn(label: Text('단위')),
-    DataColumn(label: Text('수량')),
-    DataColumn(label: Text('위치')),
-    DataColumn(label: Text('시스템 사용자')),
+    DataColumn(label: Text(date)),
+    DataColumn(label: Text(category)),
+    DataColumn(label: Text(memo)),
+    DataColumn(label: Text(type)),
+    DataColumn(label: Text(specification)),
+    DataColumn(label: Text(maker)),
+    DataColumn(label: Text(quantity)),
+    DataColumn(label: Text(location)),
+    DataColumn(label: Text(systemUser)),
   ];
   late StockHistoryDataSource _dataSource;
   Key _dataTableKey = UniqueKey();
@@ -307,15 +307,12 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
                     children: [
                       Flexible(
                         child: SingleChildScrollView(
-                          child: SizedBox(
-                            width: 1150,
-                            child: PaginatedDataTable(
-                              key: _dataTableKey,
-                              columns: _columns,
-                              source: _dataSource,
-                              rowsPerPage: 10,
-                              showCheckboxColumn: false,
-                            ),
+                          child: PaginatedDataTable(
+                            key: _dataTableKey,
+                            columns: _columns,
+                            source: _dataSource,
+                            rowsPerPage: 6,
+                            showCheckboxColumn: false,
                           ),
                         ),
                       ),

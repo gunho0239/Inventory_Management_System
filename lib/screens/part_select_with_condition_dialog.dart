@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventory_management/constants/columns.dart';
 import 'package:inventory_management/datatable_source/part_data.dart';
 import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/part.dart';
@@ -11,25 +12,30 @@ import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/icon_label.dart';
 import 'package:provider/provider.dart';
 
-class PartSelectDialog extends StatefulWidget {
+class PartSelectWithConditionDialog extends StatefulWidget {
+  final PartType? selectedType;
+  final PartMaker? selectedMaker;
+  final String? specFilter;
 
-  const PartSelectDialog({super.key});
+  const PartSelectWithConditionDialog({super.key, this.selectedType, this.selectedMaker, this.specFilter});
 
   @override
-  State<PartSelectDialog> createState() => _PartSelectDialogState();
+  State<PartSelectWithConditionDialog> createState() => _PartSelectWithConditionDialogState();
 }
 
-class _PartSelectDialogState extends State<PartSelectDialog> {
+class _PartSelectWithConditionDialogState extends State<PartSelectWithConditionDialog> {
   late PartType selectedType;
   late PartMaker selectedMaker;
 
-  final TextEditingController specFieldController = TextEditingController();
+  final TextEditingController _typeFieldController = TextEditingController();
+  final TextEditingController _makerFieldController = TextEditingController();
+  final TextEditingController _specFieldController = TextEditingController();
 
   final List<DataColumn> columns = [
-    DataColumn(label: Text('품명')),
-    DataColumn(label: Text('규격')),
-    DataColumn(label: Text('제조사')),
-    DataColumn(label: Text('단위')),
+    DataColumn(label: Text(type)),
+    DataColumn(label: Text(specification)),
+    DataColumn(label: Text(maker)),
+    DataColumn(label: Text(unit)),
   ];
   late PartDataSource _dataSource;
   Key dataTableKey = UniqueKey();
@@ -40,12 +46,28 @@ class _PartSelectDialogState extends State<PartSelectDialog> {
   void initState() {
     super.initState();
     final typeProvider = Provider.of<TypeProvider>(context, listen: false);
-    selectedType = typeProvider.allType;
+    if (widget.selectedType != null) {
+      selectedType = widget.selectedType!;
+    } else {
+      selectedType = typeProvider.allType;
+    }
+    _typeFieldController.text = selectedType.type ?? "";
     typeProvider.reloadTypes();
 
     final makerProvider = Provider.of<MakerProvider>(context, listen: false);
-    selectedMaker = makerProvider.allMaker;
+    if (widget.selectedMaker != null) {
+      selectedMaker = widget.selectedMaker!;
+    } else {
+      selectedMaker = makerProvider.allMaker;
+    }
+    _makerFieldController.text = selectedMaker.maker ?? "";
     makerProvider.reloadMakers();
+
+    if (widget.specFilter != null) {
+      _specFieldController.text = widget.specFilter!;
+    }
+
+    getParts();
   }
 
   void getParts() async {
@@ -55,7 +77,7 @@ class _PartSelectDialogState extends State<PartSelectDialog> {
     
     final isAllType = selectedType == typeProvider.allType;
     final isAllMaker = selectedMaker == makerProvider.allMaker;
-    final specText = specFieldController.text.trim();
+    final specText = _specFieldController.text.trim();
     
     inquiredParts = await switch ((isAllType, isAllMaker, specText.isEmpty)) {
       (true, true, true) => partRepo.getAllParts(),
@@ -106,6 +128,7 @@ class _PartSelectDialogState extends State<PartSelectDialog> {
               spacing: 10,
               children: [
                 DropdownMenu<PartType>(
+                  controller: _typeFieldController,
                   label: IconLabel(labelType: LabelType.type),
                   enableFilter: true,
                   menuHeight: 400,
@@ -121,6 +144,7 @@ class _PartSelectDialogState extends State<PartSelectDialog> {
                       typeProvider.typesDropdownWithAll,
                 ),
                 DropdownMenu<PartMaker>(
+                  controller: _makerFieldController,
                   label: IconLabel(labelType: LabelType.maker),
                   enableFilter: true,
                   menuHeight: 400,
@@ -138,7 +162,7 @@ class _PartSelectDialogState extends State<PartSelectDialog> {
                 SizedBox(
                   width: 180,
                   child: TextField(
-                    controller: specFieldController,
+                    controller: _specFieldController,
                     decoration: InputDecoration(
                       label: IconLabel(labelType: LabelType.specification),
                       hintText: "입력 후 엔터",
@@ -153,10 +177,10 @@ class _PartSelectDialogState extends State<PartSelectDialog> {
               ],
             ),
           ),
-          Expanded(
-            child: SizedBox(
-              width: 700,
-              child: SingleChildScrollView(
+          Flexible(
+            child: SingleChildScrollView(
+              child: SizedBox(
+                width: 1000,
                 child: PaginatedDataTable(
                   key: dataTableKey,
                   columns: columns,

@@ -50,6 +50,10 @@ class IconLabel extends StatelessWidget {
         iconData = MenuIcons.endNumber;
         labelName = '종료 번호';
         break;
+      case LabelType.quantity:
+        iconData = MenuIcons.quantity;
+        labelName = '수량';
+        break;
     }
   }
 

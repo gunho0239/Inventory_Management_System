@@ -135,7 +135,7 @@ class _UserManagementDialogState extends State<UserManagementDialog> {
                   key: _dataTableKey,
                   columns: _columns,
                   source: _dataSource,
-                  rowsPerPage: 10,
+                  rowsPerPage: 6,
                   showCheckboxColumn: true,
                 ),
               ),

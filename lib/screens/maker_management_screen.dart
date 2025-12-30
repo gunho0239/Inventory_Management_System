@@ -30,7 +30,7 @@ class _MakerManagementScreenState extends State<MakerManagementScreen> {
   void initState() {
     super.initState();
     final makerProvider = Provider.of<MakerProvider>(context, listen: false);
-    selectedMaker = makerProvider.allMaker;;
+    selectedMaker = makerProvider.allMaker;
     makerProvider.reloadMakers();
   }
 
@@ -124,7 +124,7 @@ class _MakerManagementScreenState extends State<MakerManagementScreen> {
                                   key: dataTableKey,
                                   columns: columns,
                                   source: _dataSource,
-                                  rowsPerPage: 10,
+                                  rowsPerPage: 6,
                                   showCheckboxColumn: true,
                                 ),
                               ),

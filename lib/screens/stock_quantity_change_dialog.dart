@@ -3,6 +3,7 @@ import 'package:flutter_spinbox/material.dart';
 import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/constants/columns.dart';
 import 'package:inventory_management/constants/menu_name.dart';
+import 'package:inventory_management/models/quantity_change_stock.dart';
 import 'package:inventory_management/models/stock.dart';
 import 'package:inventory_management/models/stock_history.dart';
 import 'package:inventory_management/models/stock_history_category.dart';
@@ -15,9 +16,9 @@ import 'package:inventory_management/widgets/icons.dart';
 import 'package:provider/provider.dart';
 
 class QuantityChangeDialog extends StatefulWidget {
-  final Stock selectedStock;
+  final List<Stock> selectedStocks;
 
-  const QuantityChangeDialog({super.key, required this.selectedStock});
+  const QuantityChangeDialog({super.key, required this.selectedStocks});
 
   @override
   State<QuantityChangeDialog> createState() => _QuantityChangeDialogState();
@@ -25,97 +26,178 @@ class QuantityChangeDialog extends StatefulWidget {
 
 class _QuantityChangeDialogState extends State<QuantityChangeDialog> {
   final TextEditingController memoFieldController = TextEditingController();
-  late double resetQuantity;
-  bool deleteStock = false;
   late final String currentUserName;
 
+  List<QuantityChangedStock> changedStocks = [];
   final List<DataColumn> columns = [
     DataColumn(label: Text(type)),
     DataColumn(label: Text(specification)),
     DataColumn(label: Text(maker)),
-    DataColumn(label: Text(unit)),
     DataColumn(label: Text(quantity)),
-    DataColumn(label: Text(section)),
-    DataColumn(label: Text(number)),
+    DataColumn(label: Text(location)),
+    DataColumn(label: Text(newQuantity)),
+    DataColumn(label: Text(deleteStock)),
   ];
-  late final List<DataRow> stockRow;
+  late List<DataRow> _stockRow;
 
 
-  Future<SingleRequestResult> updateStock() async {
+  Future<BulkRequestResultWithIds> updateStock() async {
+    List<Stock> stocksToUpdate = [];
+    List<Stock> stocksToRemove = [];
+
+    for (final changedStock in changedStocks) {
+      final stock = changedStock.stock;
+
+      if (changedStock.newQuantity > 0) {
+        final modifiedStock = Stock(
+          id: stock.id,
+          part: stock.part,
+          location: stock.location,
+          quantity: changedStock.newQuantity,
+          version: stock.version,
+        );
+
+        stocksToUpdate.add(modifiedStock);
+      }
+      else {
+        stocksToRemove.add(stock);
+      }
+    }
+
     final stockRepo = StockRepository();
-    final stock = widget.selectedStock;
-    late final SingleRequestResult result;
-    final resetQuantity = this.resetQuantity.toInt();
+    late final BulkRequestResultWithIds result;
 
-    if (deleteStock == false) {
-      final modifiedStock = Stock(
-        id: stock.id,
-        part: stock.part,
-        location: stock.location,
-        quantity: resetQuantity,
-        version: stock.version,
-      );
+    final updateResult = await stockRepo.updateStocks(stocksToUpdate);
+    final removeResult = await stockRepo.removeStocks(stocksToRemove);
 
-      result = await stockRepo.updateStock(modifiedStock);
-    }
-    else {
-      result = await stockRepo.removeStock(stock);
-    }
+    result = BulkRequestResultWithIds(
+      successIds: List<int>.from(removeResult.successIds)..addAll(updateResult.successIds),
+      failedIds: List<int>.from(removeResult.failedIds)..addAll(updateResult.failedIds),
+    );
 
     return result;
   }
 
-  Future<void> createStockHistory() async {
-    final stockHistoryRepo = StockHistoryRepository();
-    final stock = widget.selectedStock;
+  Future<void> createStockHistory(BulkRequestResultWithIds updateResult) async {
+    List<StockHistory> stockHistories = [];
 
     final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
     final personProvider = Provider.of<PersonProvider>(context, listen: false);
     
-    final afterQuantity = (deleteStock) ? 0 : resetQuantity.toInt();
-    final stockLocation = '${stock.location?.section.section ?? ""} ${stock.location?.number ?? ""}';
+    for (final changedStock in changedStocks) {
+      if (changedStock.newQuantity == changedStock.stock.quantity) {
+        continue; // 수량 변경이 없는 경우 기록하지 않음
+      }
 
-    final stockHistory = StockHistory(
-      category: categoryProvider.getCategory(StockHistoryCategoryType.quantityChange),
-      memo: memoFieldController.text.trim(),
-      type: stock.part?.type.type ?? "",
-      specification: stock.part?.specification ?? "",
-      maker: stock.part?.maker.maker ?? "",
-      unit: stock.part?.unit.unit ?? "",
-      beforeQuantity: stock.quantity ?? 0,
-      afterQuantity: afterQuantity,
-      beforeLocation: stockLocation,
-      afterLocation: stockLocation,
-      person: personProvider.currentUser?.name ?? "",
-    );
+      if (updateResult.failedIds.contains(changedStock.stock.id)) {
+        continue; // 재고 수량 변경에 실패한 재고는 이력 생성하지 않음
+      }
 
-    stockHistoryRepo.addHistory(stockHistory);
+      final stock = changedStock.stock;
+      final afterQuantity = changedStock.newQuantity;
+      final stockLocation = '${stock.location?.section.section ?? ""}-${stock.location?.number ?? ""}';
+
+      final stockHistory = StockHistory(
+        category: categoryProvider.getCategory(StockHistoryCategoryType.quantityChange),
+        memo: memoFieldController.text.trim(),
+        type: stock.part?.type.type ?? "",
+        specification: stock.part?.specification ?? "",
+        maker: stock.part?.maker.maker ?? "",
+        unit: stock.part?.unit.unit ?? "",
+        beforeQuantity: stock.quantity ?? 0,
+        afterQuantity: afterQuantity,
+        beforeLocation: stockLocation,
+        afterLocation: stockLocation,
+        person: personProvider.currentUser?.name ?? "",
+      );
+      stockHistories.add(stockHistory);
+    }
+
+    final stockHistoryRepo = StockHistoryRepository();
+    stockHistoryRepo.addHistories(stockHistories);
   }
 
+  String getFailedMessage(BulkRequestResultWithIds result) {
+    List<QuantityChangedStock> failedChanges = changedStocks
+        .where(
+          (changedStock) => result.failedIds.contains(changedStock.stock.id),
+        )
+        .toList();
+
+    String failedChangesInfo = failedChanges
+        .map((changedStock) {
+          final stock = changedStock.stock;
+
+          return '${stock.part?.type.type ?? ""}  |  ${(stock.part?.specification ?? "")}  |  ${(stock.part?.maker.maker ?? "")}  |  ${(stock.part?.unit.unit ?? "")}  |  ${(stock.quantity?.toString() ?? "")}  |  ${('${stock.location?.section.section ?? ""}${stock.location?.number.toString() ?? ""}')}  |  ${changedStock.newQuantity.toString()}';
+        })
+        .join('\n');
+
+    return '성공: ${result.successIds.length}건, 실패: ${result.failedIds.length}건'
+    '\n실패 사유: 작업 도중에 데이터가 다른 사용자에 의해 변경되었습니다. 최신 데이터를 다시 조회하여 작업해 주세요.'
+    '\n\n<실패한 재고>'
+    '\n품명  |  규격  |  제조사  |  단위  |  수량  |  위치  |  변경수량'
+    '\n$failedChangesInfo';
+  }
 
   @override
   void initState() {
     super.initState();
 
-    final stock = widget.selectedStock;
-    resetQuantity = stock.quantity!.toDouble();
-    stockRow = [
-      DataRow(cells: [
-          DataCell(Text(stock.part?.type.type ?? "")),
-          DataCell(Text(stock.part?.specification ?? "")),
-          DataCell(Text(stock.part?.maker.maker ?? "")),
-          DataCell(Text(stock.part?.unit.unit ?? "")),
-          DataCell(Text(stock.quantity?.toString() ?? "")),
-          DataCell(Text(stock.location?.section.section ?? "")),
-          DataCell(Text(stock.location?.number.toString() ?? "")),
-        ])
-    ];
+    changedStocks = widget.selectedStocks.map((stock) => QuantityChangedStock(stock: stock)).toList();
+    _stockRow = _buildDataRows();
 
     currentUserName = Provider.of<PersonProvider>(context, listen: false).currentUser!.name!;
   }
 
+  List<DataRow> _buildDataRows() {
+    return changedStocks.map((changedStock) {
+      Stock stock = changedStock.stock;
+
+      return DataRow(
+        cells: [
+          DataCell(Text(stock.part?.type.type ?? "")),
+          DataCell(Text(stock.part?.specification ?? "")),
+          DataCell(Text(stock.part?.maker.maker ?? "")),
+          DataCell(Align(
+            alignment: Alignment.centerRight,
+            child: Text("${stock.quantity?.toString() ?? ""} / ${stock.part?.unit.unit ?? ""}"))),
+          DataCell(Text("${stock.location?.section.section ?? ""}-${stock.location?.number.toString() ?? ""}")),
+          DataCell(SizedBox(
+            width: 90, 
+            child: SpinBox(
+              keyboardType: TextInputType.number,
+              value: changedStock.newQuantity.toDouble(),
+              min: 0,
+              max: 100000,
+              step: 1,
+              showButtons: false,
+              onChanged: (value) {
+                setState(() {
+                  changedStock.newQuantity = value.toInt();
+                });
+              }
+            ),
+          )),
+          DataCell(Checkbox(
+            value: changedStock.newQuantity == 0,
+            onChanged: (value) {
+              setState(() {
+                if (value == true) {
+                  changedStock.newQuantity = 0;
+                } else {
+                  changedStock.newQuantity = stock.quantity ?? 0;
+                }
+              });
+            },
+          )),
+        ]);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    _stockRow = _buildDataRows();
+
     return AlertDialog(
       title: Row(
         spacing: 5,
@@ -130,43 +212,28 @@ class _QuantityChangeDialogState extends State<QuantityChangeDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: 30,
           children: [
-            DataTable(
-              columns: columns,
-              rows: stockRow,
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columns: columns,
+                rows: _stockRow,
+              ),
             ),
             Row(
               spacing: 30,
               children: [
-                SizedBox(
-                  width: 200,
-                  child: SpinBox(
-                    min: 1,
-                    max: 9999.0,
-                    step: 1,
-                    enabled: !deleteStock,
+                Expanded(
+                  child: TextField(
+                    controller: memoFieldController,
+                    maxLines: 3,
+                    maxLength: 150,
                     decoration: InputDecoration(
-                      labelText: '변경 수량',
+                      labelText: '메모 (선택)',
+                      hintText: '필요 시 입력',
+                      border: OutlineInputBorder(),
                     ),
-                    value: resetQuantity,
-                    onChanged: (value) {
-                      setState(() {
-                        resetQuantity = value;
-                      });
-                    },
                   ),
                 ),
-                Flexible(
-                  child: CheckboxListTile(
-                    controlAffinity: ListTileControlAffinity.leading,
-                    title: Text('재고 삭제', ),
-                    value: deleteStock,  
-                    onChanged: (value) {  
-                      setState(() {  
-                        deleteStock = value!;  
-                      });  
-                    },  
-                  ),
-                ),  
                 SizedBox(
                   width: 180,
                   child: TextField(
@@ -179,19 +246,6 @@ class _QuantityChangeDialogState extends State<QuantityChangeDialog> {
                   ),
                 ),
               ],
-            ),
-            SizedBox(
-              width: 700,
-              child: TextField(
-                controller: memoFieldController,
-                maxLines: 3,
-                maxLength: 150,
-                decoration: InputDecoration(
-                  labelText: '메모 (선택)',
-                  hintText: '필요 시 입력',
-                  border: OutlineInputBorder(),
-                ),
-              ),
             ),
           ],
         ),
@@ -209,9 +263,10 @@ class _QuantityChangeDialogState extends State<QuantityChangeDialog> {
             if (proceed == true) {
               final requestResult = await updateStock();
               if (!context.mounted) return;
+              
+              createStockHistory(requestResult);
 
-              if (requestResult.isSuccess) {
-                createStockHistory();
+              if (requestResult.failedIds.isEmpty) {
                 await showDialog(
                   context: context,
                   builder: (context) => ResultDialog(message: '정상적으로 처리되었습니다.')
@@ -219,7 +274,10 @@ class _QuantityChangeDialogState extends State<QuantityChangeDialog> {
               } else {
                 await showDialog(
                   context: context,
-                  builder: (context) => ErrorDialog(message: requestResult.errorMessage ?? "재고 수량 변경에 실패하였습니다. 새로고침 후 다시 시도해 주세요.")
+                  builder: (context) => ErrorDialog(
+                    message: getFailedMessage(requestResult),
+                    style: TextStyle(fontFamily: 'monospace',),
+                  ),
                 );
               }
               if (!context.mounted) return;

@@ -148,7 +148,7 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
                               dropdownMenuEntries: sectionProvider.sectionsDropdown,
                             ),
                             SizedBox(
-                              width: 130,
+                              width: 140,
                               child: TextField(
                                 controller: startNumberController,
                                 inputFormatters: [
@@ -161,7 +161,7 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
                               ),
                             ),
                             SizedBox(
-                              width: 130,
+                              width: 140,
                               child: TextField(
                                 controller: endNumberController,
                                 inputFormatters: [
@@ -233,7 +233,7 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
                                 child: PaginatedDataTable(
                                   columns: columns,
                                   source: _dataSource,
-                                  rowsPerPage: 10,
+                                  rowsPerPage: 6,
                                   showCheckboxColumn: true,
                                 ),
                               ),
