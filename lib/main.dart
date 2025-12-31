@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:window_manager/window_manager.dart';
 import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/providers/category_provider.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/providers/person_provider.dart';
 import 'package:inventory_management/providers/theme_provider.dart';
@@ -9,6 +11,7 @@ import 'package:inventory_management/providers/type_provider.dart';
 import 'package:inventory_management/providers/unit_provider.dart';
 import 'package:inventory_management/screens/part_management_screen.dart';
 import 'package:inventory_management/screens/stock_history_screen.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:inventory_management/providers/section_provider.dart';
 import 'package:inventory_management/widgets/navigationbar.dart';
@@ -16,7 +19,22 @@ import 'screens/location_management_screen.dart';
 import 'screens/stock_management_screen.dart';
 import 'screens/stock_register_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  await windowManager.ensureInitialized();
+  WindowOptions windowOptions = const WindowOptions(
+    minimumSize: Size(1000, 500),
+    center: true,
+    title: "LSENG 재고 관리 시스템",
+  );
+
+  windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.maximize();
+    await windowManager.show();
+    await windowManager.focus();
+  });
+  
   runApp(
     MultiProvider(
       providers: [
@@ -27,6 +45,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => UnitProvider()),
         ChangeNotifierProvider(create: (_) => PersonProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => DataTableOptionsProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -79,9 +98,10 @@ class MainApp extends StatefulWidget {
   State<MainApp> createState() => _MainAppState();
 }
 
-class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
-  late AnimationController _rotationController;
+class _MainAppState extends State<MainApp> {
   InventoryMenu selectedMenu = InventoryMenu.stockManagement;
+  bool _isCollapsed = false;
+  String _appVersion = "";
 
   final Map<InventoryMenu, Widget> pages = {
     InventoryMenu.stockManagement: StockManagementScreen(),
@@ -102,19 +122,19 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _rotationController = AnimationController(
-      duration: const Duration(seconds: 10),
-      vsync: this,
-    )..repeat(); // 무한 반복
 
+    getAppVersion();
     Provider.of<CategoryProvider>(context, listen: false).reloadCategories();
   }
 
-  @override
-  void dispose() {
-    _rotationController.dispose();
-    super.dispose();
+  Future<void> getAppVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
+    setState(() {
+      _appVersion = packageInfo.version;
+    });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -122,42 +142,14 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
       body: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Column(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  width: 200,
-                  child: SideNavigationBar(
-                    selectedMenu: selectedMenu,
-                    onMenuSelect: onMenuSelect,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: AnimatedBuilder(
-                  animation: _rotationController,
-                  builder: (context, child) {
-                    return Transform(
-                      alignment: Alignment.center,
-                      transform: Matrix4.identity()
-                        ..setEntry(3, 2, 0.001) // 원근감 추가
-                        ..rotateY(_rotationController.value * 2 * 3.14159), // Y축 회전
-                      child: Image.asset(
-                        'lib/assets/logo.png',
-                        width: 150,
-                        height: 80,
-                        fit: BoxFit.contain,
-                      ),
-                    );
-                  }
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text("2025.08.25    leegunho", style: TextStyle(color: Colors.grey)),
-              ),
-            ],
+          SideNavigationBar(
+            selectedMenu: selectedMenu,
+            onMenuSelect: onMenuSelect,
+            isCollapsed: _isCollapsed,
+            onToggle: () {
+              setState(() => _isCollapsed = !_isCollapsed);
+            },
+            appVersion: _appVersion,
           ),
           Expanded(
             child: Stack(

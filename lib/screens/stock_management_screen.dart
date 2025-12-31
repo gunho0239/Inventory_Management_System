@@ -8,6 +8,7 @@ import 'package:inventory_management/models/part_maker.dart';
 import 'package:inventory_management/models/part_type.dart';
 import 'package:inventory_management/models/person.dart';
 import 'package:inventory_management/models/stock.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/providers/person_provider.dart';
 import 'package:inventory_management/providers/section_provider.dart';
@@ -18,7 +19,6 @@ import 'package:inventory_management/screens/stock_quantity_change_dialog.dart';
 import 'package:inventory_management/screens/stock_release_dialog.dart';
 import 'package:inventory_management/screens/user_management_dialog.dart';
 import 'package:inventory_management/widgets/buttons.dart';
-import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/icon_label.dart';
 import 'package:inventory_management/widgets/title.dart';
 import 'package:provider/provider.dart';
@@ -158,6 +158,7 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
     final makerProvider = Provider.of<MakerProvider>(context);
     final sectionProvider = Provider.of<SectionProvider>(context);
     final personProvider = Provider.of<PersonProvider>(context);
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
 
 
     return Column(
@@ -265,88 +266,97 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
                   ),
                 ),
                 Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Flexible(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.vertical,
-                          child: PaginatedDataTable(
-                            key: dataTableKey,
-                            columns: columns,
-                            source: _dataSource,
-                            rowsPerPage: 6,
-                            showCheckboxColumn: true,
-                            showFirstLastButtons: true,
-                            showEmptyRows: false,
+                  child: SizedBox(
+                    width: 1500,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Flexible(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            child: PaginatedDataTable(
+                              key: dataTableKey,
+                              columns: columns,
+                              source: _dataSource,
+                              rowsPerPage: tableOptionsProvider.rowsPerPage,
+                              availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
+                              showCheckboxColumn: true,
+                              showFirstLastButtons: true,
+                              showEmptyRows: false,
+                              onRowsPerPageChanged: (value) {
+                                if (value != null) {
+                                  tableOptionsProvider.updateRowsPerPage(value);
+                                }
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20,),
-                        child: Column(
-                          spacing: 20,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              spacing: 5, 
-                              children: [
-                                DropdownMenu<Person>(
-                                  label: Text("System User"),
-                                  enableFilter: true,
-                                  menuHeight: 400,
-                                  width: 150,
-                                  initialSelection: personProvider.currentUser,
-                                  onSelected: (person) {
-                                    if (person != null) {
-                                      personProvider.currentUser = person;
-                                    }
-                                  },
-                                  dropdownMenuEntries:
-                                      personProvider.personsDropdown,
-                                ),
-                                EditButton(
-                                  onPressed: () async {
-                                    final refresh = await showDialog<bool>(
-                                      context: context,
-                                      builder: (context) => UserManagementDialog(),
-                                    );
-                      
-                                    if (refresh == true) {
-                                      setState(() {});
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                            ReleaseButton(
-                              onPressed: () async {
-                                showEachDialog(
-                                  context, 
-                                  DialogType.release,
-                                );
-                              },
-                            ),
-                            QuantityChangeButton(
-                              onPressed: () {
-                                showEachDialog(
-                                  context, 
-                                  DialogType.quantityChange,
-                                );
-                              },
-                            ),
-                            LocationChangeButton(
-                              onPressed: () {
-                                showEachDialog(
-                                  context, 
-                                  DialogType.locationChange,
-                                );
-                              },
-                            ),
-                          ],
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20,),
+                          child: Column(
+                            spacing: 20,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                spacing: 5, 
+                                children: [
+                                  DropdownMenu<Person>(
+                                    label: Text("System User"),
+                                    enableFilter: true,
+                                    menuHeight: 400,
+                                    width: 150,
+                                    initialSelection: personProvider.currentUser,
+                                    onSelected: (person) {
+                                      if (person != null) {
+                                        personProvider.currentUser = person;
+                                      }
+                                    },
+                                    dropdownMenuEntries:
+                                        personProvider.personsDropdown,
+                                  ),
+                                  EditButton(
+                                    onPressed: () async {
+                                      final refresh = await showDialog<bool>(
+                                        context: context,
+                                        builder: (context) => UserManagementDialog(),
+                                      );
+                        
+                                      if (refresh == true) {
+                                        setState(() {});
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                              ReleaseButton(
+                                onPressed: () async {
+                                  showEachDialog(
+                                    context, 
+                                    DialogType.release,
+                                  );
+                                },
+                              ),
+                              QuantityChangeButton(
+                                onPressed: () {
+                                  showEachDialog(
+                                    context, 
+                                    DialogType.quantityChange,
+                                  );
+                                },
+                              ),
+                              LocationChangeButton(
+                                onPressed: () {
+                                  showEachDialog(
+                                    context, 
+                                    DialogType.locationChange,
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ],

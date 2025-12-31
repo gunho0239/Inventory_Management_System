@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/datatable_source/person_data.dart';
 import 'package:inventory_management/models/person.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/person_provider.dart';
 import 'package:inventory_management/repository/person_repository.dart';
 import 'package:inventory_management/widgets/buttons.dart';
@@ -106,6 +107,7 @@ class _UserManagementDialogState extends State<UserManagementDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
 
     _dataSource = PersonDataSource(
       persons: _inquiredPersons,
@@ -135,7 +137,13 @@ class _UserManagementDialogState extends State<UserManagementDialog> {
                   key: _dataTableKey,
                   columns: _columns,
                   source: _dataSource,
-                  rowsPerPage: 6,
+                  rowsPerPage: tableOptionsProvider.rowsPerPage,
+                  availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
+                  onRowsPerPageChanged: (value) {
+                    if (value != null) {
+                      tableOptionsProvider.updateRowsPerPage(value);
+                    }
+                  },
                   showCheckboxColumn: true,
                 ),
               ),

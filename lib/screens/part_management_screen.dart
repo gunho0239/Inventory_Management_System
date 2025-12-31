@@ -6,6 +6,7 @@ import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/part.dart';
 import 'package:inventory_management/models/part_maker.dart';
 import 'package:inventory_management/models/part_type.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/providers/type_provider.dart';
 import 'package:inventory_management/repository/part_repository.dart';
@@ -73,15 +74,18 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
               specText.isEmpty ? null : specText,
             ),
     };
-
+    
     selectedParts.clear();
-    setState(() {});
+    if(mounted) {
+      setState(() {});
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final typeProvider = Provider.of<TypeProvider>(context);
     final makerProvider = Provider.of<MakerProvider>(context);
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
 
     _dataSource = PartDataSource(
       parts: inquiredParts,
@@ -185,74 +189,83 @@ class _PartManagementScreenState extends State<PartManagementScreen> {
                   ),
                 ),
                 Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Flexible(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10.0,
-                          ),
-                          child: SingleChildScrollView(
-                            child: PaginatedDataTable(
-                              key: dataTableKey,
-                              columns: columns,
-                              source: _dataSource,
-                              rowsPerPage: 6,
-                              showCheckboxColumn: true,
-                              showEmptyRows: false,
-                              showFirstLastButtons: true,
+                  child: SizedBox(
+                    width: 1400,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Flexible(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10.0,
+                            ),
+                            child: SingleChildScrollView(
+                              child: PaginatedDataTable(
+                                key: dataTableKey,
+                                columns: columns,
+                                source: _dataSource,
+                                rowsPerPage: tableOptionsProvider.rowsPerPage,
+                                availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
+                                showCheckboxColumn: true,
+                                showEmptyRows: false,
+                                showFirstLastButtons: true,
+                                onRowsPerPageChanged: (value) {
+                                  if (value != null) {
+                                    tableOptionsProvider.updateRowsPerPage(value);
+                                  }
+                                },
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      DeleteButton(
-                        onPressed: () async {
-                          if (selectedParts.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('삭제할 부품을 선택해주세요.')),
+                        DeleteButton(
+                          onPressed: () async {
+                            if (selectedParts.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('삭제할 부품을 선택해주세요.')),
+                              );
+                              return;
+                            }
+                            final confirmed = await showDialog(
+                              context: context,
+                              builder: (context) => ConfirmDialog(
+                                message: "선택한 부품을 삭제하시겠습니까?",
+                              ),
                             );
-                            return;
-                          }
-                          final confirmed = await showDialog(
-                            context: context,
-                            builder: (context) => ConfirmDialog(
-                              message: "선택한 부품을 삭제하시겠습니까?",
-                            ),
-                          );
-    
-                          if (confirmed == null || confirmed == false) return;
-                          
-                          List<int> partIds = selectedParts
-                              .map((part) => part.id!)
-                              .toList();
-                          BulkRequestResult result = await PartRepository()
-                              .removeParts(partIds);
-    
-                          String message = "";
-                          if (result.successCount > 0) {
-                            dataTableKey = UniqueKey();
-                            message =
-                                "${result.successCount}개의 부품을 삭제하였습니다.\n";
-                          }
-                          if (result.failedCount > 0) {
-                            message =
-                                "${result.successCount}개 삭제 완료\n${result.failedCount}개 삭제 실패!";
-                          }
-    
-                          if (!context.mounted) return;
-                          showDialog(
-                            context: context,
-                            builder: (context) => ResultDialog(
-                              message: message,
-                            ),
-                          );
-    
-                          selectedParts.clear();
-                          getParts();
-                        },
-                      ),
-                    ],
+                        
+                            if (confirmed == null || confirmed == false) return;
+                            
+                            List<int> partIds = selectedParts
+                                .map((part) => part.id!)
+                                .toList();
+                            BulkRequestResult result = await PartRepository()
+                                .removeParts(partIds);
+                        
+                            String message = "";
+                            if (result.successCount > 0) {
+                              dataTableKey = UniqueKey();
+                              message =
+                                  "${result.successCount}개의 부품을 삭제하였습니다.\n";
+                            }
+                            if (result.failedCount > 0) {
+                              message =
+                                  "${result.successCount}개 삭제 완료\n${result.failedCount}개 삭제 실패!";
+                            }
+                        
+                            if (!context.mounted) return;
+                            showDialog(
+                              context: context,
+                              builder: (context) => ResultDialog(
+                                message: message,
+                              ),
+                            );
+                        
+                            selectedParts.clear();
+                            getParts();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

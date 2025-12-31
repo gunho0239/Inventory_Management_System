@@ -4,6 +4,7 @@ import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/part.dart';
 import 'package:inventory_management/models/part_type.dart';
 import 'package:inventory_management/models/part_maker.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/type_provider.dart';
 import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/repository/part_repository.dart';
@@ -77,6 +78,7 @@ class _PartSelectDialogState extends State<PartSelectDialog> {
   Widget build(BuildContext context) {
     final typeProvider = Provider.of<TypeProvider>(context);
     final makerProvider = Provider.of<MakerProvider>(context);
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
 
     _dataSource = PartDataSource(
       parts: inquiredParts,
@@ -161,7 +163,13 @@ class _PartSelectDialogState extends State<PartSelectDialog> {
                   key: dataTableKey,
                   columns: columns,
                   source: _dataSource,
-                  rowsPerPage: 6,
+                  rowsPerPage: tableOptionsProvider.rowsPerPage,
+                  availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
+                  onRowsPerPageChanged: (value) {
+                    if (value != null) {
+                      tableOptionsProvider.updateRowsPerPage(value);
+                    }
+                  },
                   showCheckboxColumn: true,
                   onSelectAll: (selected) {},
                 ),

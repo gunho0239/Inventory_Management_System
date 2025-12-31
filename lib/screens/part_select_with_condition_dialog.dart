@@ -5,6 +5,7 @@ import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/part.dart';
 import 'package:inventory_management/models/part_type.dart';
 import 'package:inventory_management/models/part_maker.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/type_provider.dart';
 import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/repository/part_repository.dart';
@@ -99,6 +100,7 @@ class _PartSelectWithConditionDialogState extends State<PartSelectWithConditionD
   Widget build(BuildContext context) {
     final typeProvider = Provider.of<TypeProvider>(context);
     final makerProvider = Provider.of<MakerProvider>(context);
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
 
     _dataSource = PartDataSource(
       parts: inquiredParts,
@@ -116,83 +118,89 @@ class _PartSelectWithConditionDialogState extends State<PartSelectWithConditionD
 
     return AlertDialog(
       title: Text('부품 선택'),
-      content: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 10,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 10,
-              children: [
-                DropdownMenu<PartType>(
-                  controller: _typeFieldController,
-                  label: IconLabel(labelType: LabelType.type),
-                  enableFilter: true,
-                  menuHeight: 400,
-                  width: 180,
-                  onSelected: (type) {
-                    if (type != null) {
-                      selectedType = type;
-                      getParts();
-                      dataTableKey = UniqueKey();
-                    }
-                  },
-                  dropdownMenuEntries:
-                      typeProvider.typesDropdownWithAll,
-                ),
-                DropdownMenu<PartMaker>(
-                  controller: _makerFieldController,
-                  label: IconLabel(labelType: LabelType.maker),
-                  enableFilter: true,
-                  menuHeight: 400,
-                  width: 180,
-                  onSelected: (maker) {
-                    if (maker != null) {
-                      selectedMaker = maker;
-                      getParts();
-                      dataTableKey = UniqueKey();
-                    }
-                  },
-                  dropdownMenuEntries:
-                      makerProvider.makersDropdownWithAll,
-                ),
-                SizedBox(
-                  width: 180,
-                  child: TextField(
-                    controller: _specFieldController,
-                    decoration: InputDecoration(
-                      label: IconLabel(labelType: LabelType.specification),
-                      hintText: "입력 후 엔터",
-                      border: OutlineInputBorder(),
-                    ),
-                    onSubmitted: (sectionName) {
-                      dataTableKey = UniqueKey();
-                      getParts();
+      content: SizedBox(
+        width: 1300,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 10,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 10,
+                children: [
+                  DropdownMenu<PartType>(
+                    controller: _typeFieldController,
+                    label: IconLabel(labelType: LabelType.type),
+                    enableFilter: true,
+                    menuHeight: 400,
+                    width: 180,
+                    onSelected: (type) {
+                      if (type != null) {
+                        selectedType = type;
+                        getParts();
+                        dataTableKey = UniqueKey();
+                      }
                     },
+                    dropdownMenuEntries:
+                        typeProvider.typesDropdownWithAll,
                   ),
-                ),
-              ],
+                  DropdownMenu<PartMaker>(
+                    controller: _makerFieldController,
+                    label: IconLabel(labelType: LabelType.maker),
+                    enableFilter: true,
+                    menuHeight: 400,
+                    width: 180,
+                    onSelected: (maker) {
+                      if (maker != null) {
+                        selectedMaker = maker;
+                        getParts();
+                        dataTableKey = UniqueKey();
+                      }
+                    },
+                    dropdownMenuEntries:
+                        makerProvider.makersDropdownWithAll,
+                  ),
+                  SizedBox(
+                    width: 180,
+                    child: TextField(
+                      controller: _specFieldController,
+                      decoration: InputDecoration(
+                        label: IconLabel(labelType: LabelType.specification),
+                        hintText: "입력 후 엔터",
+                        border: OutlineInputBorder(),
+                      ),
+                      onSubmitted: (sectionName) {
+                        dataTableKey = UniqueKey();
+                        getParts();
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Flexible(
-            child: SingleChildScrollView(
-              child: SizedBox(
-                width: 1000,
+            Flexible(
+              child: SingleChildScrollView(
                 child: PaginatedDataTable(
                   key: dataTableKey,
                   columns: columns,
                   source: _dataSource,
-                  rowsPerPage: 6,
+                  rowsPerPage: tableOptionsProvider.rowsPerPage,
+                  availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
+                  onRowsPerPageChanged: (value) {
+                    if (value != null) {
+                      tableOptionsProvider.updateRowsPerPage(value);
+                    }
+                  },
                   showCheckboxColumn: true,
                   onSelectAll: (selected) {},
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       actions: [
         TextButton(

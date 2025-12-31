@@ -3,6 +3,7 @@ import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/datatable_source/location_section_data.dart';
 import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/models/location_section.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/section_provider.dart';
 import 'package:inventory_management/repository/location_section_repository.dart';
 import 'package:inventory_management/widgets/buttons.dart';
@@ -38,6 +39,7 @@ class _SectionManagementScreenState extends State<SectionManagementScreen> {
   @override
   Widget build(BuildContext context) {
     final sectionProvider = Provider.of<SectionProvider>(context);
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
 
     _dataSource = LocationSectionDataSource(
       sections: (selectedSection == sectionProvider.allSection)
@@ -121,7 +123,13 @@ class _SectionManagementScreenState extends State<SectionManagementScreen> {
                                   key: dataTableKey,
                                   columns: columns,
                                   source: _dataSource,
-                                  rowsPerPage: 6,
+                                  rowsPerPage: tableOptionsProvider.rowsPerPage,
+                                  availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
+                                  onRowsPerPageChanged: (value) {
+                                    if (value != null) {
+                                      tableOptionsProvider.updateRowsPerPage(value);
+                                    }
+                                  },
                                   showCheckboxColumn: true,
                                 ),
                               ),

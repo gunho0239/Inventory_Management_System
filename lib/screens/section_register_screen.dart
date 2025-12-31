@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventory_management/datatable_source/location_section_data.dart';
 import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/models/location_section.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/section_provider.dart';
 import 'package:inventory_management/repository/location_section_repository.dart';
 import 'package:inventory_management/widgets/buttons.dart';
@@ -56,6 +57,8 @@ class _SectionRegisterScreenState extends State<SectionRegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
+    
     _dataSource = LocationSectionDataSource(
       sections: sections.toList(),
       selectedSections: selectedSections,
@@ -125,7 +128,13 @@ class _SectionRegisterScreenState extends State<SectionRegisterScreen> {
                                   key: dataTableKey,
                                   columns: columns,
                                   source: _dataSource,
-                                  rowsPerPage: 6,
+                                  rowsPerPage: tableOptionsProvider.rowsPerPage,
+                                  availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
+                                  onRowsPerPageChanged: (value) {
+                                    if (value != null) {
+                                      tableOptionsProvider.updateRowsPerPage(value);
+                                    }
+                                  },
                                   showCheckboxColumn: true,
                                 ),
                               ),

@@ -13,6 +13,7 @@ import 'package:inventory_management/models/stock.dart';
 import 'package:inventory_management/models/stock_history.dart';
 import 'package:inventory_management/models/stock_history_category.dart';
 import 'package:inventory_management/providers/category_provider.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/providers/person_provider.dart';
 import 'package:inventory_management/providers/section_provider.dart';
@@ -221,6 +222,7 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
     final makerProvider = Provider.of<MakerProvider>(context);
     final sectionProvider = Provider.of<SectionProvider>(context);
     final personProvider = Provider.of<PersonProvider>(context, listen: false);
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
 
     _typeFieldController.text = _newStock?.part?.type.type ?? "";
     _makerFieldController.text = _newStock?.part?.maker.maker ?? "";
@@ -238,13 +240,15 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                spacing: 10,
                 children: [
-                  Expanded(
+                  Flexible(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Padding(
                         padding: const EdgeInsets.only(top: 5.0),
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           spacing: 5,
                           children: [
                             DropdownMenu<PartType>(
@@ -350,137 +354,145 @@ class _StockRegisterScreenState extends State<StockRegisterScreen> {
                     horizontal: 20.0,
                     vertical: 20.0,
                   ),
-                  child: Row(
-                    spacing: 20,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Flexible(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.vertical,
-                          child: PaginatedDataTable(
-                            key: _dataTableKey,
-                            columns: _columns,
-                            source: _dataSource,
-                            rowsPerPage: 6,
-                            showCheckboxColumn: true,
-                            showEmptyRows: false,
-                            showFirstLastButtons: true,
-                          ),
-                        ),
-                      ),
-                      Column(
-                        spacing: 20,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            spacing: 5, 
-                            children: [
-                              DropdownMenu<Person>(
-                                label: Text("System User"),
-                                enableFilter: true,
-                                menuHeight: 400,
-                                width: 150,
-                                initialSelection: personProvider.currentUser,
-                                onSelected: (person) {
-                                  if (person != null) {
-                                    personProvider.currentUser = person;
-                                  }
-                                },
-                                dropdownMenuEntries:
-                                    personProvider.personsDropdown,
-                              ),
-                              EditButton(
-                                onPressed: () async {
-                                  final refresh = await showDialog<bool>(
-                                    context: context,
-                                    builder: (context) => UserManagementDialog(),
-                                  );
-
-                                  if (refresh == true) {
-                                    setState(() {});
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            width: 200,
-                            child: TextField(
-                              controller: _memoFieldController,
-                              maxLines: 3,
-                              maxLength: 150,
-                              decoration: InputDecoration(
-                                labelText: '재고 등록 메모 (선택)',
-                                border: OutlineInputBorder(),
-                              ),
+                  child: SizedBox(
+                    width: 1500,
+                    child: Row(
+                      spacing: 20,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Flexible(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            child: PaginatedDataTable(
+                              key: _dataTableKey,
+                              columns: _columns,
+                              source: _dataSource,
+                              rowsPerPage: tableOptionsProvider.rowsPerPage,
+                              availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
+                              onRowsPerPageChanged: (value) {
+                                if (value != null) {
+                                  tableOptionsProvider.updateRowsPerPage(value);
+                                }
+                              },
+                              showCheckboxColumn: true,
+                              showFirstLastButtons: true,
                             ),
                           ),
-                          SaveAllButton(
-                            onPressed: () async {
-                              if (_addedStocks.isEmpty) return;
-
-                              if (personProvider.currentUser == null) {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) =>
-                                      ErrorDialog(message: '시스템 사용자를 선택해주세요.'),
-                                );
-                                return;
-                              }
-
-                              final confirmed = await showDialog<bool>(
-                                context: context,
-                                builder: (context) =>
-                                    ConfirmDialog(message: "전체등록 하시겠습니까?"),
-                              );
-                              if (!context.mounted) return;
-
-                              if (confirmed == true) {
-                                final registeredStocks = await registerAllStocks();
-                                if (!context.mounted) return;
-
-                                if (registeredStocks != null && registeredStocks.isNotEmpty) {
-
-                                  createStockHistories(registeredStocks);
-
-                                  setState(() {
-                                    _addedStocks.clear();
-                                    _dataTableKey = UniqueKey();
-                                    refresh = true;
-                                  });
-
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => ResultDialog(
-                                      message: '${registeredStocks.length}개의 재고가 등록되었습니다.',
-                                    ),
-                                  );
-                                } 
-                                else {
+                        ),
+                        Column(
+                          spacing: 20,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              spacing: 5, 
+                              children: [
+                                DropdownMenu<Person>(
+                                  label: Text("System User"),
+                                  enableFilter: true,
+                                  menuHeight: 400,
+                                  width: 150,
+                                  initialSelection: personProvider.currentUser,
+                                  onSelected: (person) {
+                                    if (person != null) {
+                                      personProvider.currentUser = person;
+                                    }
+                                  },
+                                  dropdownMenuEntries:
+                                      personProvider.personsDropdown,
+                                ),
+                                EditButton(
+                                  onPressed: () async {
+                                    final refresh = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => UserManagementDialog(),
+                                    );
+                    
+                                    if (refresh == true) {
+                                      setState(() {});
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              width: 300,
+                              child: TextField(
+                                controller: _memoFieldController,
+                                maxLines: 3,
+                                maxLength: 150,
+                                decoration: InputDecoration(
+                                  labelText: '재고 등록 메모 (선택)',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+                            SaveAllButton(
+                              onPressed: () async {
+                                if (_addedStocks.isEmpty) return;
+                    
+                                if (personProvider.currentUser == null) {
                                   showDialog(
                                     context: context,
                                     builder: (context) =>
-                                        ErrorDialog(message: '이미 등록된 재고입니다.'),
+                                        ErrorDialog(message: '시스템 사용자를 선택해주세요.'),
                                   );
+                                  return;
                                 }
+                    
+                                final confirmed = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) =>
+                                      ConfirmDialog(message: "전체등록 하시겠습니까?"),
+                                );
+                                if (!context.mounted) return;
+                    
+                                if (confirmed == true) {
+                                  final registeredStocks = await registerAllStocks();
+                                  if (!context.mounted) return;
+                    
+                                  if (registeredStocks != null && registeredStocks.isNotEmpty) {
+                    
+                                    createStockHistories(registeredStocks);
+                    
+                                    setState(() {
+                                      _addedStocks.clear();
+                                      _dataTableKey = UniqueKey();
+                                      refresh = true;
+                                    });
+                    
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => ResultDialog(
+                                        message: '${registeredStocks.length}개의 재고가 등록되었습니다.',
+                                      ),
+                                    );
+                                  } 
+                                  else {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) =>
+                                          ErrorDialog(message: '이미 등록된 재고입니다.'),
+                                    );
+                                  }
+                                }
+                              },
+                            ),
+                            DeleteButton(onPressed: () {
+                              if (_selectedStocks.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('삭제할 재고를 선택해주세요.')),
+                                );
+                                return;
                               }
-                            },
-                          ),
-                          DeleteButton(onPressed: () {
-                            if (_selectedStocks.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('삭제할 재고를 선택해주세요.')),
-                              );
-                              return;
-                            }
-                              
-                            _addedStocks.removeWhere((stock) => _selectedStocks.contains(stock));
-                            _selectedStocks.clear();
-                            _dataSource.updateSelected();
-                          }),
-                        ],
-                      ),
-                    ],
+                                
+                              _addedStocks.removeWhere((stock) => _selectedStocks.contains(stock));
+                              _selectedStocks.clear();
+                              _dataSource.updateSelected();
+                            }),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

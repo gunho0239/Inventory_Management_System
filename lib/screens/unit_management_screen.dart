@@ -3,6 +3,7 @@ import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/datatable_source/part_unit_data.dart';
 import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/models/part_unit.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/unit_provider.dart';
 import 'package:inventory_management/repository/part_unit_repository.dart';
 import 'package:inventory_management/widgets/buttons.dart';
@@ -37,6 +38,7 @@ class _UnitManagementScreenState extends State<UnitManagementScreen> {
   @override
   Widget build(BuildContext context) {
     final unitProvider = Provider.of<UnitProvider>(context);
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
 
     _dataSource = PartUnitDataSource(
       units: (selectedUnit == unitProvider.allUnit) ? unitProvider.units : [selectedUnit],
@@ -119,7 +121,13 @@ class _UnitManagementScreenState extends State<UnitManagementScreen> {
                                 key: dataTableKey,
                                 columns: columns,
                                 source: _dataSource,
-                                rowsPerPage: 6,
+                                rowsPerPage: tableOptionsProvider.rowsPerPage,
+                                availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
+                                onRowsPerPageChanged: (value) {
+                                  if (value != null) {
+                                    tableOptionsProvider.updateRowsPerPage(value);
+                                  }
+                                },
                                 showCheckboxColumn: true,
                               ),
                             ),

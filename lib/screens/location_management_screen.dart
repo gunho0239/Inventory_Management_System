@@ -5,6 +5,7 @@ import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/location.dart';
 import 'package:inventory_management/models/location_section.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/section_provider.dart';
 import 'package:inventory_management/repository/location_repository.dart';
 import 'package:inventory_management/screens/location_register_screen.dart';
@@ -76,6 +77,7 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
   @override
   Widget build(BuildContext context) {
     final sectionProvider = Provider.of<SectionProvider>(context);
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
 
 
     return Column(
@@ -134,12 +136,12 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
                   ),
                 ),
                 Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Flexible(
-                        child: SizedBox(
-                          width: 500,
+                  child: SizedBox(
+                    width: 800,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Flexible(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10.0,
@@ -149,60 +151,67 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
                                 key: dataTableKey,
                                 columns: columns,
                                 source: _dataSource,
-                                rowsPerPage: 6,
+                                rowsPerPage: tableOptionsProvider.rowsPerPage,
+                                availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
                                 showCheckboxColumn: true,
+                                showFirstLastButtons: true,
+                                onRowsPerPageChanged: (value) {
+                                  if (value != null) {
+                                    tableOptionsProvider.updateRowsPerPage(value);
+                                  }
+                                },
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      DeleteButton(
-                        onPressed: () async {
-                          if (selectedLocations.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('삭제할 위치를 선택해주세요.')),
+                        DeleteButton(
+                          onPressed: () async {
+                            if (selectedLocations.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('삭제할 위치를 선택해주세요.')),
+                              );
+                              return;
+                            }
+                            final confirmed = await showDialog(
+                              context: context,
+                              builder: (context) => ConfirmDialog(
+                                message: "선택한 위치를 삭제하시겠습니까?",
+                              ),
                             );
-                            return;
-                          }
-                          final confirmed = await showDialog(
-                            context: context,
-                            builder: (context) => ConfirmDialog(
-                              message: "선택한 위치를 삭제하시겠습니까?",
-                            ),
-                          );
-    
-                          if (confirmed == null || confirmed == false) return;
-                          
-                          List<int> locationIds = selectedLocations
-                              .map((loc) => loc.id!)
-                              .toList();
-                          BulkRequestResult result = await LocationRepository()
-                              .removeLocations(locationIds);
-    
-                          String message = "";
-                          if (result.successCount > 0) {
-                            dataTableKey = UniqueKey();
-                            message =
-                                "${result.successCount}개의 위치를 삭제하였습니다.\n";
-                          }
-                          if (result.failedCount > 0) {
-                            message =
-                                "${result.successCount}개 삭제 완료\n${result.failedCount}개 삭제 실패!\n해당 위치의 재고를 먼저 이동시켜주세요.";
-                          }
-    
-                          if (!context.mounted) return;
-                          showDialog(
-                            context: context,
-                            builder: (context) => ResultDialog(
-                              message: message,
-                            ),
-                          );
-    
-                          selectedLocations.clear();
-                          getLocations();
-                        },
-                      ),
-                    ],
+                        
+                            if (confirmed == null || confirmed == false) return;
+                            
+                            List<int> locationIds = selectedLocations
+                                .map((loc) => loc.id!)
+                                .toList();
+                            BulkRequestResult result = await LocationRepository()
+                                .removeLocations(locationIds);
+                        
+                            String message = "";
+                            if (result.successCount > 0) {
+                              dataTableKey = UniqueKey();
+                              message =
+                                  "${result.successCount}개의 위치를 삭제하였습니다.\n";
+                            }
+                            if (result.failedCount > 0) {
+                              message =
+                                  "${result.successCount}개 삭제 완료\n${result.failedCount}개 삭제 실패!\n해당 위치의 재고를 먼저 이동시켜주세요.";
+                            }
+                        
+                            if (!context.mounted) return;
+                            showDialog(
+                              context: context,
+                              builder: (context) => ResultDialog(
+                                message: message,
+                              ),
+                            );
+                        
+                            selectedLocations.clear();
+                            getLocations();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

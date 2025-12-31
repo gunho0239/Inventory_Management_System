@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventory_management/datatable_source/part_type_data.dart';
 import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/models/part_type.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/type_provider.dart';
 import 'package:inventory_management/repository/part_type_repository.dart';
 import 'package:inventory_management/widgets/buttons.dart';
@@ -56,6 +57,8 @@ class _TypeRegisterScreenState extends State<TypeRegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
+    
     _dataSource = PartTypeDataSource(
       types: types.toList(),
       selectedTypes: selectedTypes,
@@ -125,7 +128,13 @@ class _TypeRegisterScreenState extends State<TypeRegisterScreen> {
                                   key: dataTableKey,
                                   columns: columns,
                                   source: _dataSource,
-                                  rowsPerPage: 6,
+                                  rowsPerPage: tableOptionsProvider.rowsPerPage,
+                                  availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
+                                  onRowsPerPageChanged: (value) {
+                                    if (value != null) {
+                                      tableOptionsProvider.updateRowsPerPage(value);
+                                    }
+                                  },
                                   showCheckboxColumn: true,
                                 ),
                               ),

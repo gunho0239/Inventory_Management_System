@@ -3,6 +3,7 @@ import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/datatable_source/part_type_data.dart';
 import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/models/part_type.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/type_provider.dart';
 import 'package:inventory_management/repository/part_type_repository.dart';
 import 'package:inventory_management/widgets/buttons.dart';
@@ -38,6 +39,7 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
   @override
   Widget build(BuildContext context) {
     final typeProvider = Provider.of<TypeProvider>(context);
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
 
     _dataSource = PartTypeDataSource(
       types: (selectedType == typeProvider.allType) ? typeProvider.types : [selectedType],
@@ -111,7 +113,7 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                         ),
                         Flexible(
                           child: SizedBox(
-                            width: 500,
+                            width: 700,
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 10.0,
@@ -121,7 +123,13 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                                   key: dataTableKey,
                                   columns: columns,
                                   source: _dataSource,
-                                  rowsPerPage: 6,
+                                  rowsPerPage: tableOptionsProvider.rowsPerPage,
+                                  availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
+                                  onRowsPerPageChanged: (value) {
+                                    if (value != null) {
+                                      tableOptionsProvider.updateRowsPerPage(value);
+                                    }
+                                  },
                                   showCheckboxColumn: true,
                                 ),
                               ),

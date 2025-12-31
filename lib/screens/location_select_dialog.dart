@@ -4,6 +4,7 @@ import 'package:inventory_management/datatable_source/location_data.dart';
 import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/location.dart';
 import 'package:inventory_management/models/location_section.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/section_provider.dart';
 import 'package:inventory_management/repository/location_repository.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
@@ -65,6 +66,7 @@ class _LocationSelectDialogState extends State<LocationSelectDialog> {
   @override
   Widget build(BuildContext context) {
     final sectionProvider = Provider.of<SectionProvider>(context);
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
 
     _dataSource = LocationDataSource(
       locations: _inquiredLocations,
@@ -135,8 +137,14 @@ class _LocationSelectDialogState extends State<LocationSelectDialog> {
                   key: _dataTableKey,
                   columns: _columns,
                   source: _dataSource,
-                  rowsPerPage: 6,
+                  rowsPerPage: tableOptionsProvider.rowsPerPage,
+                  availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
                   showCheckboxColumn: true,
+                  onRowsPerPageChanged: (value) {
+                    if (value != null) {
+                      tableOptionsProvider.updateRowsPerPage(value);
+                    }
+                  },
                 ),
               ),
             ),

@@ -7,6 +7,7 @@ import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/stock_history.dart';
 import 'package:inventory_management/models/stock_history_category.dart';
 import 'package:inventory_management/providers/category_provider.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/repository/stock_history_repository.dart';
 import 'package:inventory_management/screens/stock_history_details_dialog.dart';
 import 'package:inventory_management/widgets/icon_label.dart';
@@ -67,7 +68,7 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
 
     final now = DateTime.now();
     _selectedEndDate = now;
-    _selectedStartDate = DateTime(now.year, now.month, now.day - 7);
+    _selectedStartDate = DateTime(now.year, now.month - 6, now.day);
     _endDateFieldController.text = _dateFormat.format(_selectedEndDate!);
     _startDateFieldController.text = _dateFormat.format(_selectedStartDate!);
     
@@ -136,6 +137,7 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final categoryProvider = Provider.of<CategoryProvider>(context);
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
 
     _dataSource = StockHistoryDataSource(
       stockHistories: _inquiredStockHistories,
@@ -302,21 +304,30 @@ class _StockHistoryScreenState extends State<StockHistoryScreen> {
                   ),
                 ),
                 Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Flexible(
-                        child: SingleChildScrollView(
-                          child: PaginatedDataTable(
-                            key: _dataTableKey,
-                            columns: _columns,
-                            source: _dataSource,
-                            rowsPerPage: 6,
-                            showCheckboxColumn: false,
+                  child: SizedBox(
+                    width: 1600,
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: SingleChildScrollView(
+                            child: PaginatedDataTable(
+                              key: _dataTableKey,
+                              columns: _columns,
+                              source: _dataSource,
+                              rowsPerPage: tableOptionsProvider.rowsPerPage,
+                              availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
+                              onRowsPerPageChanged: (value) {
+                                if (value != null) {
+                                  tableOptionsProvider.updateRowsPerPage(value);
+                                }
+                              },
+                              showCheckboxColumn: false,
+                              showFirstLastButtons: true,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ],

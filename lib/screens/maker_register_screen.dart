@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventory_management/datatable_source/part_maker_data.dart';
 import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/models/part_maker.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/maker_provider.dart';
 import 'package:inventory_management/repository/part_maker_repository.dart';
 import 'package:inventory_management/widgets/buttons.dart';
@@ -56,6 +57,8 @@ class _MakerRegisterScreenState extends State<MakerRegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
+    
     _dataSource = PartMakerDataSource(
       makers: makers.toList(),
       selectedMakers: selectedMakers,
@@ -125,8 +128,14 @@ class _MakerRegisterScreenState extends State<MakerRegisterScreen> {
                                   key: dataTableKey,
                                   columns: columns,
                                   source: _dataSource,
-                                  rowsPerPage: 6,
+                                  rowsPerPage: tableOptionsProvider.rowsPerPage,
+                                  availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
                                   showCheckboxColumn: true,
+                                  onRowsPerPageChanged: (value) {
+                                    if (value != null) {
+                                      tableOptionsProvider.updateRowsPerPage(value);
+                                    }
+                                  },
                                 ),
                               ),
                             ),

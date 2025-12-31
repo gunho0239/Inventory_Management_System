@@ -5,6 +5,7 @@ import 'package:inventory_management/datatable_source/location_data.dart';
 import 'package:inventory_management/enums/label_type.dart';
 import 'package:inventory_management/models/location.dart';
 import 'package:inventory_management/models/location_section.dart';
+import 'package:inventory_management/providers/data_table_options_provider.dart';
 import 'package:inventory_management/providers/section_provider.dart';
 import 'package:inventory_management/repository/location_repository.dart';
 import 'package:inventory_management/widgets/dialogs.dart';
@@ -73,6 +74,7 @@ class _LocationSelectWithConditionDialogState extends State<LocationSelectWithCo
   @override
   Widget build(BuildContext context) {
     final sectionProvider = Provider.of<SectionProvider>(context);
+    final tableOptionsProvider = context.watch<DataTableOptionsProvider>();
 
     _dataSource = LocationDataSource(
       locations: _inquiredLocations,
@@ -90,66 +92,72 @@ class _LocationSelectWithConditionDialogState extends State<LocationSelectWithCo
 
     return AlertDialog(
       title: Text('위치 선택'),
-      content: Row(
-        spacing: 10,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 10,
-              children: [
-                DropdownMenu<LocationSection>(
-                  label: IconLabel(labelType: LabelType.section),
-                  enableFilter: true,
-                  menuHeight: 400,
-                  width: 150,
-                  onSelected: (section) {
-                    if (section != null) {
-                      _selectedSection = section;
-                      getLocations();
-                    }
-                  },
-                  dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
-                ),
-                SizedBox(
-                  width: 150,
-                  child: TextField(
-                    controller: _numberFieldController,
-                    focusNode: _numberFieldFocusNode,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
-                    decoration: InputDecoration(
-                      label: IconLabel(labelType: LabelType.number),
-                      hintText: "입력 후 엔터",
-                      border: OutlineInputBorder(),
-                    ),
-                    onSubmitted: (locationNumber) {
-                      getLocations();
-                      FocusScope.of(context).requestFocus(_numberFieldFocusNode);
+      content: SizedBox(
+        width: 800,
+        child: Row(
+          spacing: 10,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 10,
+                children: [
+                  DropdownMenu<LocationSection>(
+                    label: IconLabel(labelType: LabelType.section),
+                    enableFilter: true,
+                    menuHeight: 400,
+                    width: 150,
+                    onSelected: (section) {
+                      if (section != null) {
+                        _selectedSection = section;
+                        getLocations();
+                      }
                     },
+                    dropdownMenuEntries: sectionProvider.sectionsDropdownWithAll,
                   ),
-                ),
-              ],
+                  SizedBox(
+                    width: 150,
+                    child: TextField(
+                      controller: _numberFieldController,
+                      focusNode: _numberFieldFocusNode,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      decoration: InputDecoration(
+                        label: IconLabel(labelType: LabelType.number),
+                        hintText: "입력 후 엔터",
+                        border: OutlineInputBorder(),
+                      ),
+                      onSubmitted: (locationNumber) {
+                        getLocations();
+                        FocusScope.of(context).requestFocus(_numberFieldFocusNode);
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: SizedBox(
-              width: 500,
+            Flexible(
               child: SingleChildScrollView(
                 child: PaginatedDataTable(
                   key: _dataTableKey,
                   columns: _columns,
                   source: _dataSource,
-                  rowsPerPage: 6,
+                  rowsPerPage: tableOptionsProvider.rowsPerPage,
+                  availableRowsPerPage: tableOptionsProvider.availableRowsPerPage,
                   showCheckboxColumn: true,
+                  onRowsPerPageChanged: (value) {
+                    if (value != null) {
+                      tableOptionsProvider.updateRowsPerPage(value);
+                    }
+                  },
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       actions: [
         TextButton(
