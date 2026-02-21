@@ -1,7 +1,7 @@
 name: inventory_management
 description: "LSENG 재고관리시스템"
 publish_to: 'Gunho Lee'
-version: 0.1.2
+version: 1.0.0
 
 environment:
   sdk: ^3.8.1

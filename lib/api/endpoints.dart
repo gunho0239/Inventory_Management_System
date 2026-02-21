@@ -9,4 +9,5 @@ class Endpoints {
   static const String persons = "persons";
   static const String stockHistories = "stock-histories";
   static const String stockHistoryCategories = "stock-history-categories";
+  static const String backup = "backup";
 }

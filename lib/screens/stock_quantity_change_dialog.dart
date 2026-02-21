@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinbox/material.dart';
-import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/constants/columns.dart';
 import 'package:inventory_management/constants/menu_name.dart';
+import 'package:inventory_management/dto/bulk_request_result_with_ids.dart';
 import 'package:inventory_management/models/quantity_change_stock.dart';
 import 'package:inventory_management/models/stock.dart';
 import 'package:inventory_management/models/stock_history.dart';

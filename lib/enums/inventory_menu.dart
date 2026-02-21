@@ -14,4 +14,5 @@ enum InventoryMenu {
     sectionManagement,     // 구역 관리
     sectionRegister,       // 구역 등록
     stockHistory,     // 변동 내역
+    backupManagement // 백업 관리
 }

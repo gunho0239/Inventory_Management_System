@@ -1,5 +1,5 @@
 import 'package:inventory_management/api/api_client.dart';
-import 'package:inventory_management/api/api_response_entity.dart';
+import 'package:inventory_management/dto/bulk_request_result.dart';
 import 'package:inventory_management/api/endpoints.dart';
 import 'package:inventory_management/models/person.dart';
 

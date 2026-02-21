@@ -33,6 +33,8 @@ class ScreenTitle extends StatelessWidget {
         return Icon(MenuIcons.section, size: 30);
       case InventoryMenu.stockHistory:
         return Icon(MenuIcons.history, size: 30);
+      case InventoryMenu.backupManagement:
+        return Icon(MenuIcons.backup, size: 30);
     }
   }
 
@@ -68,6 +70,8 @@ class ScreenTitle extends StatelessWidget {
         return '구역 등록';
       case InventoryMenu.stockHistory:
         return '변동 내역';
+      case InventoryMenu.backupManagement:
+        return '백업 관리';
     }
   }
 

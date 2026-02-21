@@ -23,4 +23,7 @@ class MenuIcons {
   static const IconData release = Icons.logout;
   static const IconData quantityChange = Icons.exposure_plus_1;
   static const IconData locationChange = Icons.edit_location_outlined;
+
+  static const IconData backup = Icons.backup;
+  static const IconData restore = Icons.settings_backup_restore;
 }

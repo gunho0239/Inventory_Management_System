@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:inventory_management/api/api_response_entity.dart';
 import 'package:inventory_management/datatable_source/location_data.dart';
 import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/enums/label_type.dart';
@@ -14,6 +13,7 @@ import 'package:inventory_management/widgets/dialogs.dart';
 import 'package:inventory_management/widgets/icon_label.dart';
 import 'package:inventory_management/widgets/title.dart';
 import 'package:provider/provider.dart';
+import 'package:inventory_management/dto/bulk_request_result.dart';
 
 class LocationManagementScreen extends StatefulWidget {
   const LocationManagementScreen({super.key});

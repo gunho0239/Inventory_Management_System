@@ -110,6 +110,7 @@ class _SideNavigationBarState extends State<SideNavigationBar> with TickerProvid
                     ],
                   ),
                 _navButton('변동내역', InventoryMenu.stockHistory),
+                _navButton('백업 관리', InventoryMenu.backupManagement),
               ],
             ),
           ),
@@ -132,6 +133,8 @@ class _SideNavigationBarState extends State<SideNavigationBar> with TickerProvid
         return Icon(MenuIcons.location, size: 20);
       case InventoryMenu.stockHistory:
         return Icon(MenuIcons.history, size: 20);
+      case InventoryMenu.backupManagement:
+        return Icon(MenuIcons.backup, size: 20);
       default:
         return Icon(Icons.help, size: 20);
     }

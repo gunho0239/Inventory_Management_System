@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:inventory_management/screens/backup_management_screen.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:inventory_management/enums/inventory_menu.dart';
 import 'package:inventory_management/providers/category_provider.dart';
@@ -109,6 +110,7 @@ class _MainAppState extends State<MainApp> {
     InventoryMenu.partManagement: PartManagementScreen(),
     InventoryMenu.locationManagement: LocationManagementScreen(),
     InventoryMenu.stockHistory: StockHistoryScreen(),
+    InventoryMenu.backupManagement: BackupManagementScreen(),
   };
 
   void onMenuSelect(InventoryMenu menu) {

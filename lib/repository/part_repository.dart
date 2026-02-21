@@ -1,4 +1,4 @@
-import 'package:inventory_management/api/api_response_entity.dart';
+import 'package:inventory_management/dto/bulk_request_result.dart';
 import 'package:inventory_management/api/part_api.dart';
 import 'package:inventory_management/models/part.dart';
 
