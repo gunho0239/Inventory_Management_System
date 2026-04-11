@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventory_management/models/part_type.dart';
 
 class PartTypeDataSource extends DataTableSource {
-  final List<PartType> types;
+  List<PartType> types;
   final Set<PartType> selectedTypes;
   final void Function(PartType, bool) onSelectChanged;
 
@@ -23,6 +23,11 @@ class PartTypeDataSource extends DataTableSource {
         DataCell(Text(type.type ?? '')),
       ],
     );
+  }
+
+  void updateData(List<PartType> newTypes) {
+    types = newTypes;
+    notifyListeners(); 
   }
 
   @override

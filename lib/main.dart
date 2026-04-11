@@ -51,6 +51,7 @@ void main() async {
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp(
+            debugShowCheckedModeBanner: false,
             localizationsDelegates: [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
@@ -62,9 +63,18 @@ void main() async {
             ],
             scrollBehavior: MyMaterialScrollBehavior(),
             theme: ThemeData.light().copyWith(
-              scrollbarTheme: ScrollbarThemeData(),
+              scrollbarTheme: const ScrollbarThemeData(),
+              inputDecorationTheme: _textFieldDecorationTheme(ThemeData.light().colorScheme),
+              dropdownMenuTheme: DropdownMenuThemeData(
+                inputDecorationTheme: _dropdownDecorationTheme(),
+              ),
             ),
-            darkTheme: ThemeData.dark(),
+            darkTheme: ThemeData.dark().copyWith(
+              inputDecorationTheme: _textFieldDecorationTheme(ThemeData.dark().colorScheme),
+              dropdownMenuTheme: DropdownMenuThemeData(
+                inputDecorationTheme: _dropdownDecorationTheme(),
+              ),
+            ),
             themeMode: themeProvider.themeMode,
             title: 'LSENG Inventory Management System',
             home: const MainApp()
@@ -90,6 +100,42 @@ class MyMaterialScrollBehavior extends MaterialScrollBehavior {
   }
 }
 
+InputDecorationTheme _textFieldDecorationTheme(ColorScheme colorScheme) {
+  return InputDecorationTheme(
+    filled: true,
+    fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: Colors.grey.shade300, width: 0.8),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: Colors.grey.shade300, width: 0.8),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: Colors.blueGrey, width: 1.0),
+    ),
+  );
+}
+
+InputDecorationTheme _dropdownDecorationTheme() {
+  return InputDecorationTheme(
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: Colors.grey.shade300, width: 0.8),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: Colors.grey.shade300, width: 0.8),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: Colors.blueGrey, width: 1.0),
+    ),
+  );
+}
+
 class MainApp extends StatefulWidget {
   const MainApp({super.key});
 
@@ -102,37 +148,32 @@ class _MainAppState extends State<MainApp> {
   bool _isCollapsed = false;
   String _appVersion = "";
 
-  final Map<InventoryMenu, Widget> pages = {
-    InventoryMenu.stockManagement: StockManagementScreen(),
-    InventoryMenu.stockRegister: StockRegisterScreen(),
-    InventoryMenu.partManagement: PartManagementScreen(),
-    InventoryMenu.locationManagement: LocationManagementScreen(),
-    InventoryMenu.stockHistory: StockHistoryScreen(),
-    InventoryMenu.backupManagement: BackupManagementScreen(),
-  };
-
-  void onMenuSelect(InventoryMenu menu) {
-    setState(() {
-      selectedMenu = menu;
-    });
-  }
-
-  Widget buildPage() => pages[selectedMenu] ?? Center(child: Text('선택된 메뉴가 없습니다.'));
-
   @override
   void initState() {
     super.initState();
 
-    getAppVersion();
-    Provider.of<CategoryProvider>(context, listen: false).reloadCategories();
+    _getAppVersion();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CategoryProvider>(context, listen: false).reloadCategories();
+    });
   }
 
-  Future<void> getAppVersion() async {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+  Widget _buildPage() {
+    switch (selectedMenu) {
+      case InventoryMenu.stockManagement: return const StockManagementScreen();
+      case InventoryMenu.stockRegister: return const StockRegisterScreen();
+      case InventoryMenu.partManagement: return const PartManagementScreen();
+      case InventoryMenu.locationManagement: return const LocationManagementScreen();
+      case InventoryMenu.stockHistory: return const StockHistoryScreen();
+      case InventoryMenu.backupManagement: return const BackupManagementScreen();
+      default: return const Center(child: Text('선택된 메뉴가 없습니다.'));
+    }
+  }
 
-    setState(() {
-      _appVersion = packageInfo.version;
-    });
+  Future<void> _getAppVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    setState(() => _appVersion = packageInfo.version);
   }
 
 
@@ -144,7 +185,7 @@ class _MainAppState extends State<MainApp> {
         children: [
           SideNavigationBar(
             selectedMenu: selectedMenu,
-            onMenuSelect: onMenuSelect,
+            onMenuSelect: (menu) => setState(() => selectedMenu = menu),
             isCollapsed: _isCollapsed,
             onToggle: () {
               setState(() => _isCollapsed = !_isCollapsed);
@@ -154,7 +195,7 @@ class _MainAppState extends State<MainApp> {
           Expanded(
             child: Stack(
               children: [
-                buildPage(),
+                _buildPage(),
                 Positioned(
                   top: 20,
                   right: 20,
@@ -162,6 +203,7 @@ class _MainAppState extends State<MainApp> {
                     builder: (context, themeProvider, child) {
                       return FloatingActionButton(
                         mini: true,
+                        elevation: 2,
                         onPressed: themeProvider.toggleTheme,
                         tooltip: themeProvider.isDarkMode ? '라이트 모드로 전환' : '다크 모드로 전환',
                         child: Icon(

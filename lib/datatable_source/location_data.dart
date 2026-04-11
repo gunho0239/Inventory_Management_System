@@ -4,7 +4,7 @@ import 'package:inventory_management/models/location.dart';
 
 class LocationDataSource extends DataTableSource {
   List<Location> locations;
-  final Set<Location> selectedLocations;
+  Set<Location> selectedLocations;
   final void Function(Location, bool) onSelectChanged;
 
   LocationDataSource({

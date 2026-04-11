@@ -4,7 +4,7 @@ import 'package:inventory_management/models/stock_history.dart';
 
 
 class StockHistoryDataSource extends DataTableSource {
-  final List<StockHistory> stockHistories;
+  List<StockHistory> stockHistories;
   final void Function(StockHistory, bool) onSelectChanged;
   final DateFormat _dateFormat = DateFormat('yyyy-MM-dd HH:mm');
 
@@ -39,6 +39,11 @@ class StockHistoryDataSource extends DataTableSource {
         DataCell(Text(stockHistory.person)),
       ],
     );
+  }
+
+  void updateData(List<StockHistory> newStockHistories) {
+    stockHistories = newStockHistories; // final 키워드 제거 필요
+    notifyListeners(); 
   }
 
 

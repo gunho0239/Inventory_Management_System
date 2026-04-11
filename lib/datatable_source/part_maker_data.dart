@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventory_management/models/part_maker.dart';
 
 class PartMakerDataSource extends DataTableSource {
-  final List<PartMaker> makers;
+  List<PartMaker> makers;
   final Set<PartMaker> selectedMakers;
   final void Function(PartMaker, bool) onSelectChanged;
 
@@ -23,6 +23,11 @@ class PartMakerDataSource extends DataTableSource {
         DataCell(Text(maker.maker ?? '')),
       ],
     );
+  }
+
+  void updateData(List<PartMaker> newMakers) {
+    makers = newMakers; // 변수명이 makers인지 확인하세요.
+    notifyListeners(); 
   }
 
   @override

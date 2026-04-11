@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventory_management/models/part_unit.dart';
 
 class PartUnitDataSource extends DataTableSource {
-  final List<PartUnit> units;
+  List<PartUnit> units;
   final Set<PartUnit> selectedUnits;
   final void Function(PartUnit, bool) onSelectChanged;
 
@@ -23,6 +23,11 @@ class PartUnitDataSource extends DataTableSource {
         DataCell(Text(unit.unit ?? '')),
       ],
     );
+  }
+
+  void updateData(List<PartUnit> newUnits) {
+    units = newUnits; // 내부 데이터 리스트 갱신 (final 키워드가 없어야 함)
+    notifyListeners(); // DataTable 갱신 트리거
   }
 
   @override

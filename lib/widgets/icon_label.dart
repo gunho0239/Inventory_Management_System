@@ -4,67 +4,34 @@ import 'package:inventory_management/widgets/icons.dart';
 
 class IconLabel extends StatelessWidget {
   final LabelType labelType;
-  late final IconData iconData;
-  late final String labelName;
 
+  const IconLabel({super.key, required this.labelType});
 
-  IconLabel({super.key, required this.labelType}) {
-    switch (labelType) {
-      case LabelType.category:
-        iconData = MenuIcons.category;
-        labelName = '구분';
-        break;
-      case LabelType.type:
-        iconData = MenuIcons.type;
-        labelName = '품명';
-        break;
-      case LabelType.specification:
-        iconData = MenuIcons.specification;
-        labelName = '규격';
-        break;
-      case LabelType.maker:
-        iconData = MenuIcons.makerOutlined;
-        labelName = '제조사';
-        break;
-      case LabelType.unit:
-        iconData = MenuIcons.unit;
-        labelName = '단위';
-        break;
-      case LabelType.memo:
-        iconData = MenuIcons.memo;
-        labelName = '메모 키워드';
-        break;
-      case LabelType.section:
-        iconData = MenuIcons.section;
-        labelName = '구역';
-        break;
-      case LabelType.number:
-        iconData = MenuIcons.number;
-        labelName = '번호';
-        break;
-      case LabelType.startNumber:
-        iconData = MenuIcons.startNumber;
-        labelName = '시작 번호';
-        break;
-      case LabelType.endNumber:
-        iconData = MenuIcons.endNumber;
-        labelName = '종료 번호';
-        break;
-      case LabelType.quantity:
-        iconData = MenuIcons.quantity;
-        labelName = '수량';
-        break;
-    }
-  }
+  (IconData, String) get _info => switch (labelType) {
+        LabelType.category => (MenuIcons.category, '구분'),
+        LabelType.type => (MenuIcons.type, '품명'),
+        LabelType.specification => (MenuIcons.specification, '규격'),
+        LabelType.maker => (MenuIcons.makerOutlined, '제조사'),
+        LabelType.unit => (MenuIcons.unit, '단위'),
+        LabelType.memo => (MenuIcons.memo, '메모 키워드'),
+        LabelType.section => (MenuIcons.section, '구역'),
+        LabelType.number => (MenuIcons.number, '번호'),
+        LabelType.startNumber => (MenuIcons.startNumber, '시작 번호'),
+        LabelType.endNumber => (MenuIcons.endNumber, '종료 번호'),
+        LabelType.quantity => (MenuIcons.quantity, '수량'),
+      };
 
   @override
   Widget build(BuildContext context) {
+    // Record 구조 분해 할당
+    final (icon, text) = _info; 
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       spacing: 5,
       children: [
-        Icon(iconData),
-        Text(labelName)
+        Icon(icon),
+        Text(text),
       ],
     );
   }

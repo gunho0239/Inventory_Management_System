@@ -25,13 +25,30 @@ class SideNavigationBar extends StatefulWidget {
 class _SideNavigationBarState extends State<SideNavigationBar> with TickerProviderStateMixin {
   late final AnimationController _rotationController;
 
+
+  @override
+  void initState() {
+    super.initState();
+
+    _rotationController = AnimationController(
+      duration: const Duration(seconds: 10),
+      vsync: this,
+    )..repeat(); // 무한 반복
+  }
+
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    super.dispose();
+  }
+
   Widget _navButton(String title, InventoryMenu menu) {
     return ListTile(
       leading: getIcon(menu),
-      title: widget.isCollapsed ? null : Text(title),
+      title: widget.isCollapsed ? null : Text(title, overflow: TextOverflow.ellipsis),
       selected: widget.selectedMenu == menu,
       onTap: () => widget.onMenuSelect(menu),
-      minLeadingWidth: 0,
+      minLeadingWidth: 24,
     );
   }
 
@@ -65,21 +82,6 @@ class _SideNavigationBarState extends State<SideNavigationBar> with TickerProvid
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-
-    _rotationController = AnimationController(
-      duration: const Duration(seconds: 10),
-      vsync: this,
-    )..repeat(); // 무한 반복
-  }
-
-  @override
-  void dispose() {
-    _rotationController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
