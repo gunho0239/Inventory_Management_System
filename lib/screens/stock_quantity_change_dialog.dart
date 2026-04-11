@@ -267,9 +267,8 @@ class _QuantityChangeDialogState extends State<QuantityChangeDialog> {
               createStockHistory(requestResult);
 
               if (requestResult.failedIds.isEmpty) {
-                await showDialog(
-                  context: context,
-                  builder: (context) => ResultDialog(message: '정상적으로 처리되었습니다.')
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('정상적으로 처리되었습니다.')),
                 );
               } else {
                 await showDialog(

@@ -53,7 +53,7 @@ class HistoryDetailsDialog extends StatelessWidget {
         spacing: 5,
         children: [
           Icon(MenuIcons.history, size: 30),
-          Text(selectedHistory.category.category, style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(selectedHistory.category.category.value, style: TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
       content: SingleChildScrollView(

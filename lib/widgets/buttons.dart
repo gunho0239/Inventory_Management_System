@@ -29,6 +29,25 @@ class GoBackButton extends StatelessWidget {
   }
 }
 
+class GoFirstButton extends StatelessWidget {
+  final bool refresh;
+
+  const GoFirstButton({super.key, this.refresh = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      style: AppButtonStyle.home,
+      onPressed: () {
+        while (Navigator.canPop(context)) {
+          Navigator.pop(context, refresh);
+        }
+      },
+      child: Icon(Icons.home, size: 30),
+    );
+  }
+}
+
 class RegisterPageButton extends StatelessWidget {
   late final String menuName;
   late final Widget? registerScreen;
@@ -212,6 +231,49 @@ class LocationChangeButton extends StatelessWidget {
         children: [
           Icon(MenuIcons.locationChange, size: 30),
           Text(locationChange, style: TextStyle(fontSize: 18)),
+        ],
+      ),
+    );
+  }
+}
+
+class PrintReleasedButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const PrintReleasedButton({super.key, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: AppButtonStyle.newPage,
+      child: Row(
+        spacing: 5,
+        children: [
+          Icon(MenuIcons.print, size: 30),
+          Text(printReleased, style: TextStyle(fontSize: 18)),
+        ],
+      ),
+    );
+  }
+}
+
+
+class PrintButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const PrintButton({super.key, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: AppButtonStyle.newPage,
+      child: Row(
+        spacing: 5,
+        children: [
+          Icon(MenuIcons.print, size: 30),
+          Text("출력", style: TextStyle(fontSize: 18)),
         ],
       ),
     );

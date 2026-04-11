@@ -87,7 +87,13 @@ class _TypeRegisterScreenState extends State<TypeRegisterScreen> {
                     horizontal: 10.0,
                     vertical: 5.0,
                   ),
-                  child: GoBackButton(),
+                  child: Row(
+                    spacing: 20,
+                    children: [
+                      GoFirstButton(),
+                      GoBackButton(),
+                    ],
+                  ),
                 ),
                 Expanded(
                   child: Padding(
@@ -147,10 +153,8 @@ class _TypeRegisterScreenState extends State<TypeRegisterScreen> {
                             SaveAllButton(
                               onPressed: () async {
                                 if (types.isEmpty) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) =>
-                                        ErrorDialog(message: '등록할 품명이 없습니다.'),
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('등록할 품명이 없습니다.')),
                                   );
                                   return;
                                 }
@@ -175,11 +179,8 @@ class _TypeRegisterScreenState extends State<TypeRegisterScreen> {
                                     listen: false,
                                   ).reloadTypes();
                                   setState(() {});
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => ResultDialog(
-                                      message: '$count개의 품명이 등록되었습니다.',
-                                    ),
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('$count개의 품명이 등록되었습니다.')),
                                   );
                                 } else {
                                   showDialog(

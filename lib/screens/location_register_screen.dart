@@ -129,6 +129,7 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
                   child: Row(
                     spacing: 20,
                     children: [
+                      GoFirstButton(refresh: refresh),
                       GoBackButton(refresh: refresh),
                       ElevatedButton(
                         style: AppButtonStyle.newPage,
@@ -238,19 +239,8 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
                               SaveAllButton(
                                 onPressed: () async {
                                   if (locations.isEmpty) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: Text('알림'),
-                                        content: Text('등록할 위치가 없습니다.'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.of(context).pop(),
-                                            child: Text('확인'),
-                                          ),
-                                        ],
-                                      ),
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('등록할 위치가 없습니다.')),
                                     );
                                     return;
                                   }
@@ -275,34 +265,14 @@ class _LocationRegisterScreenState extends State<LocationRegisterScreen> {
                                     endNumberController.clear();
                                     selectedSection = null;
                                     setState(() {});
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: Text('알림'),
-                                        content: Text('$count개의 위치가 등록되었습니다.'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.of(context).pop(),
-                                            child: Text('확인'),
-                                          ),
-                                        ],
-                                      ),
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('$count개의 위치가 등록되었습니다.')),
                                     );
                                   } else {
                                     showDialog(
                                       context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: Text('오류'),
-                                        content: Text('이미 등록된 위치입니다.'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.of(context).pop(),
-                                            child: Text('확인'),
-                                          ),
-                                        ],
-                                      ),
+                                      builder: (context) =>
+                                          ErrorDialog(message: '이미 등록된 위치입니다.'),
                                     );
                                     return;
                                   }

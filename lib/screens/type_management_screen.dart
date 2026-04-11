@@ -72,6 +72,7 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                   child: Row(
                     spacing: 20,
                     children: [
+                      GoFirstButton(),
                       GoBackButton(),
                       RefreshButton(
                         onPressed: () {
@@ -173,10 +174,8 @@ class _TypeManagementScreenState extends State<TypeManagementScreen> {
                               }
 
                               if (!context.mounted) return;
-                              showDialog(
-                                context: context,
-                                builder: (context) =>
-                                    ResultDialog(message: message),
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(message)),
                               );
 
                               selectedTypes.clear();

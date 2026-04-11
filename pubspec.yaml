@@ -1,7 +1,7 @@
 name: inventory_management
 description: "LSENG 재고관리시스템"
 publish_to: 'Gunho Lee'
-version: 1.0.0
+version: 1.3.0
 
 environment:
   sdk: ^3.8.1
@@ -18,6 +18,8 @@ dependencies:
   shared_preferences: ^2.5.4
   package_info_plus: ^9.0.0
   window_manager: ^0.5.1
+  printing: ^5.14.3
+  pdf: ^3.12.0
 
 dev_dependencies:
   flutter_test:

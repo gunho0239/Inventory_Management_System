@@ -17,3 +17,4 @@ const String moveLocation = "이동위치";
 const String moveQuantity = "이동수량";
 const String date = "일시";
 const String memo = "메모";
+const String dateReleased = "출고일시";

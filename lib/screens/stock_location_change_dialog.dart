@@ -200,6 +200,7 @@ class _LocationChangeDialogState extends State<LocationChangeDialog> {
         ],
       ),
       content: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Row(
@@ -329,9 +330,8 @@ class _LocationChangeDialogState extends State<LocationChangeDialog> {
               createStockHistory(requestResult);
 
               if (requestResult.failedIds.isEmpty) {
-                await showDialog(
-                  context: context,
-                  builder: (context) => ResultDialog(message: '정상적으로 처리되었습니다.')
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('정상적으로 처리되었습니다.')),
                 );
               } else {
                 await showDialog(

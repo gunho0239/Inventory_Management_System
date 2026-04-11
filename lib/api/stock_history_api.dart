@@ -39,4 +39,14 @@ class StockHistoryApi {
     return (registeredData as List).map((json) => StockHistory.fromJson(json)).toList();
   }
 
+  Future<List<DateTime>> fetchDatesOfReleasedStocks() async {
+    final data = await ApiClient.get('${Endpoints.stockHistories}/released/dates');
+    return (data as List).map((dateStr) => DateTime.parse(dateStr)).toList();
+  }
+
+  Future<List<StockHistory>> fetchReleasedStocksByDate(DateTime date) async {
+    final data = await ApiClient.get('${Endpoints.stockHistories}/released?date=${date.toIso8601String()}');
+    return (data as List).map((json) => StockHistory.fromJson(json)).toList();
+  }
+
 }

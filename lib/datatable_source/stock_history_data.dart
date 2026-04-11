@@ -25,7 +25,7 @@ class StockHistoryDataSource extends DataTableSource {
       onSelectChanged: (selected) => onSelectChanged(stockHistory, selected ?? false),
       cells: [
         DataCell(Text(createdDate)),
-        DataCell(Text(stockHistory.category.category)),
+        DataCell(Text(stockHistory.category.category.value)),
         DataCell(Text(memo)),
         DataCell(Text(stockHistory.type)),
         DataCell(Text(stockHistory.specification)),

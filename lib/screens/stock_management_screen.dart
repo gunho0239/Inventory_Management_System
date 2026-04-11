@@ -17,7 +17,9 @@ import 'package:inventory_management/repository/stock_repository.dart';
 import 'package:inventory_management/screens/stock_location_change_dialog.dart';
 import 'package:inventory_management/screens/stock_quantity_change_dialog.dart';
 import 'package:inventory_management/screens/stock_release_dialog.dart';
+import 'package:inventory_management/screens/stock_release_print_dialog.dart';
 import 'package:inventory_management/screens/user_management_dialog.dart';
+import 'package:inventory_management/style/style.dart';
 import 'package:inventory_management/widgets/buttons.dart';
 import 'package:inventory_management/widgets/icon_label.dart';
 import 'package:inventory_management/widgets/title.dart';
@@ -152,6 +154,30 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
     }
   }
 
+  void _clearFilters() {
+    final typeProvider = Provider.of<TypeProvider>(context, listen: false);
+    final makerProvider = Provider.of<MakerProvider>(context, listen: false);
+    final sectionProvider = Provider.of<SectionProvider>(context, listen: false);
+
+    if (selectedType == typeProvider.allType &&
+        selectedMaker == makerProvider.allMaker &&
+        selectedSection == sectionProvider.allSection &&
+        specFieldController.text.isEmpty &&
+        numberFieldController.text.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      selectedType = typeProvider.allType;
+      selectedMaker = makerProvider.allMaker;
+      selectedSection = sectionProvider.allSection;
+      specFieldController.clear();
+      numberFieldController.clear();
+      dataTableKey = UniqueKey();
+      getStocks();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final typeProvider = Provider.of<TypeProvider>(context);
@@ -180,7 +206,7 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 5.0),
                     child: Row(
-                      spacing: 20,
+                      spacing: 10,
                       children: [
                         DropdownMenu<PartType>(
                           label: IconLabel(labelType: LabelType.type),
@@ -260,6 +286,13 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
                               FocusScope.of(context).requestFocus(_numberFieldFocusNode);
                             },
                           ),
+                        ),
+                        ElevatedButton(
+                          style: AppButtonStyle.newPage,
+                          onPressed: () {
+                            _clearFilters();
+                          },
+                          child: Text('필터초기화', style: TextStyle(fontSize: 16)),
                         ),
                       ],
                     ),
@@ -349,6 +382,15 @@ class _StockManagementScreenState extends State<StockManagementScreen> {
                                   showEachDialog(
                                     context, 
                                     DialogType.locationChange,
+                                  );
+                                },
+                              ),
+                              SizedBox(height: 20),
+                              PrintReleasedButton(
+                                onPressed: () {
+                                  showDialog(
+                                    context: context, 
+                                    builder: (context) => StockReleasePrintDialog()
                                   );
                                 },
                               ),

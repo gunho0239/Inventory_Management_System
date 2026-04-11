@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DataTableOptionsProvider with ChangeNotifier {
-  static const int defaultRows = 10;
-  static const List<int> availableRows = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 30];
+  static const int defaultRows = 50;
+  static const List<int> availableRows = [5, 10, 20, 30, 40, 50, 100];
   static const String _key = 'rows_per_page';
 
   int _rowsPerPage = defaultRows;

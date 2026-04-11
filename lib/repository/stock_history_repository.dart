@@ -10,4 +10,7 @@ class StockHistoryRepository {
                       => _api.fetchHistoriesByFilter(startDate, endDate, categoryId, type, spec, maker, memo);
   Future<StockHistory> addHistory(StockHistory stockHistory) => _api.createHistory(stockHistory);
   Future<List<StockHistory>> addHistories(List<StockHistory> stockHistories) => _api.createHistories(stockHistories);
+
+  Future<List<DateTime>> getDatesOfReleasedStocks() => _api.fetchDatesOfReleasedStocks();
+  Future<List<StockHistory>> getReleasedStocksByDate(DateTime date) => _api.fetchReleasedStocksByDate(date);
 }

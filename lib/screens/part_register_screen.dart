@@ -141,6 +141,7 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                   child: Row(
                     spacing: 20,
                     children: [
+                      GoFirstButton(refresh: refresh),
                       GoBackButton(refresh: refresh),
                       ElevatedButton(
                         style: AppButtonStyle.newPage,
@@ -287,10 +288,8 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                               SaveAllButton(
                                 onPressed: () async {
                                   if (parts.isEmpty) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) =>
-                                          ErrorDialog(message: '등록할 부품이 없습니다.'),
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('등록할 부품이 없습니다.')),
                                     );
                                     return;
                                   }
@@ -313,11 +312,8 @@ class _PartRegisterScreenState extends State<PartRegisterScreen> {
                                       dataTableKey = UniqueKey();
                                       refresh = true;
                                     });
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => ResultDialog(
-                                        message: '$count개의 부품이 등록되었습니다.',
-                                      ),
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('$count개의 부품이 등록되었습니다.')),
                                     );
                                   } else {
                                     showDialog(

@@ -87,7 +87,13 @@ class _MakerRegisterScreenState extends State<MakerRegisterScreen> {
                     horizontal: 10.0,
                     vertical: 5.0,
                   ),
-                  child: GoBackButton(),
+                  child: Row(
+                    spacing: 20,
+                    children: [
+                      GoFirstButton(),
+                      GoBackButton(),
+                    ],
+                  ),
                 ),
                 Expanded(
                   child: Padding(
@@ -147,10 +153,8 @@ class _MakerRegisterScreenState extends State<MakerRegisterScreen> {
                             SaveAllButton(
                               onPressed: () async {
                                 if (makers.isEmpty) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) =>
-                                        ErrorDialog(message: '등록할 제조사가 없습니다.'),
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('등록할 제조사가 없습니다.')),
                                   );
                                   return;
                                 }
@@ -175,11 +179,9 @@ class _MakerRegisterScreenState extends State<MakerRegisterScreen> {
                                     listen: false,
                                   ).reloadMakers();
                                   setState(() {});
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => ResultDialog(
-                                      message: '$count개의 제조사가 등록되었습니다.',
-                                    ),
+                                  
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('$count개의 제조사가 등록되었습니다.')),
                                   );
                                 } else {
                                   showDialog(

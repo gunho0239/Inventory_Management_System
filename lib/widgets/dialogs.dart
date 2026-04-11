@@ -77,6 +77,7 @@ class NumberInputDialog extends StatelessWidget {
   final String title;
   final String labelText;
   final TextEditingController controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
 
   NumberInputDialog({
     super.key,
@@ -90,10 +91,13 @@ class NumberInputDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    FocusScope.of(context).requestFocus(_focusNode);
+
     return AlertDialog(
       title: Text(title),
       content: TextField(
         controller: controller,
+        focusNode: _focusNode,
         keyboardType: TextInputType.number,
         decoration: InputDecoration(
           labelText: labelText,

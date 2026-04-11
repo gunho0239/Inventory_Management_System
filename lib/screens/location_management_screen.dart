@@ -199,11 +199,8 @@ class _LocationManagementScreenState extends State<LocationManagementScreen> {
                             }
                         
                             if (!context.mounted) return;
-                            showDialog(
-                              context: context,
-                              builder: (context) => ResultDialog(
-                                message: message,
-                              ),
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(message)),
                             );
                         
                             selectedLocations.clear();

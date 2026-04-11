@@ -71,6 +71,7 @@ class _UnitManagementScreenState extends State<UnitManagementScreen> {
                   child: Row(
                     spacing: 20,
                     children: [
+                      GoFirstButton(),
                       GoBackButton(),
                       RefreshButton(
                         onPressed: () {
@@ -170,10 +171,8 @@ class _UnitManagementScreenState extends State<UnitManagementScreen> {
                               }
 
                               if (!context.mounted) return;
-                              showDialog(
-                                context: context,
-                                builder: (context) =>
-                                    ResultDialog(message: message),
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(message)),
                               );
 
                               selectedUnits.clear();

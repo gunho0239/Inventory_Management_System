@@ -25,7 +25,7 @@ void main() async {
   
   await windowManager.ensureInitialized();
   WindowOptions windowOptions = const WindowOptions(
-    minimumSize: Size(1000, 500),
+    minimumSize: Size(1000, 600),
     center: true,
     title: "LSENG 재고 관리 시스템",
   );
@@ -61,10 +61,8 @@ void main() async {
               const Locale('en', 'US'),
             ],
             scrollBehavior: MyMaterialScrollBehavior(),
-            theme: ThemeData.light().copyWith( // 기본 라이트 테마
-              scrollbarTheme: ScrollbarThemeData(
-                // thumbVisibility: WidgetStateProperty.all<bool>(true),
-              ),
+            theme: ThemeData.light().copyWith(
+              scrollbarTheme: ScrollbarThemeData(),
             ),
             darkTheme: ThemeData.dark(),
             themeMode: themeProvider.themeMode,

@@ -26,4 +26,6 @@ class MenuIcons {
 
   static const IconData backup = Icons.backup;
   static const IconData restore = Icons.settings_backup_restore;
+
+  static const IconData print = Icons.print;
 }

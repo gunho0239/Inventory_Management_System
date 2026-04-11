@@ -74,6 +74,7 @@ class _SectionManagementScreenState extends State<SectionManagementScreen> {
                   child: Row(
                     spacing: 20,
                     children: [
+                      GoFirstButton(),
                       GoBackButton(),
                       RefreshButton(
                         onPressed: () {
@@ -174,10 +175,8 @@ class _SectionManagementScreenState extends State<SectionManagementScreen> {
                               }
 
                               if (!context.mounted) return;
-                              showDialog(
-                                context: context,
-                                builder: (context) =>
-                                    ResultDialog(message: message),
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(message)),
                               );
 
                               selectedSections.clear();
