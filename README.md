@@ -1,5 +1,6 @@
 # 시스템 메인 화면
-<img width="3837" height="1934" alt="windows client UI (main screen)" src="https://github.com/user-attachments/assets/bce84591-0f9b-47ed-9228-83c0f7d45d4c" />
+<img width="3834" height="1947" alt="windows client UI (main screen)" src="https://github.com/user-attachments/assets/92537f0f-de6f-499f-b851-21a3be617723" />
+
 
 
 # 주요 기능
