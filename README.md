@@ -1,3 +1,7 @@
+# 시스템 메인 화면
+<img width="3837" height="1934" alt="windows client UI (main screen)" src="https://github.com/user-attachments/assets/bce84591-0f9b-47ed-9228-83c0f7d45d4c" />
+
+
 # 주요 기능
 
 \[재고 관리]
